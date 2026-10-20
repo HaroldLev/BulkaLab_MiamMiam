@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Mes Recettes</title>
-<style>:root{--bg:#f7f5f2;--card:#ffffff;--primary:#ff6b4a;--primary-dark:#e5532f;--text:#2b2b2b;--muted:#8a8a8a;--border:#eae6e1;--green:#2e9e5b}*{box-sizing:border-box;margin:0;padding:0;}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);padding-bottom:100px;padding-bottom:calc(100px + env(safe-area-inset-bottom))}header{position:sticky;top:0;z-index:10;background:var(--primary);color:white;padding:16px 16px 12px;padding-top:calc(16px + env(safe-area-inset-top))}header h1{font-size:22px;font-weight:700}.tabs{display:flex;gap:8px;margin-top:12px}.tab{flex:1;border:none;background:rgba(255,255,255,.2);color:white;padding:10px;border-radius:12px;font-size:15px;font-weight:600}.tab.active{background:white;color:var(--primary-dark)}main{padding:16px;max-width:640px;margin:0 auto}.section-title{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:8px 2px 10px;font-weight:700}.recipe-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer;}.recipe-card.selected{border-color:var(--primary);background:#fff4f0}.recipe-emoji{font-size:34px}.recipe-info{flex:1}.recipe-name{font-weight:700;font-size:16px}.recipe-meta{font-size:13px;color:var(--muted);margin-top:3px}.check{width:26px;height:26px;border-radius:50%;border:2px solid #ccc;flex-shrink:0;display:flex;align-items:center;justify-content:center}.recipe-card.selected .check{background:var(--primary);border-color:var(--primary);color:white}.ing-row{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px}.ing-row input[type=checkbox]{width:20px;height:20px;accent-color:var(--green);flex-shrink:0}.ing-name{font-size:15px}.ing-qty{font-size:13px;color:var(--muted)}.ing-row.checked .ing-name{text-decoration:line-through;color:var(--muted)}.empty{text-align:center;color:var(--muted);padding:40px 20px;font-size:15px}footer{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);padding:12px 16px calc(12px + env(safe-area-inset-bottom));display:flex;gap:10px}.btn{flex:1;border:none;border-radius:14px;padding:14px;font-size:16px;font-weight:700;cursor:pointer}.btn-primary{background:var(--primary);color:white}.btn-primary:disabled{background:#ddd;color:#999}.btn-secondary{background:#f0ece8;color:var(--text)}.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:50;display:none;align-items:flex-end;justify-content:center}.modal-bg.open{display:flex}.modal{background:var(--card);width:100%;max-width:640px;border-radius:20px 20px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom));max-height:85vh;overflow-y:auto}.modal h2{font-size:18px;margin-bottom:14px}.field{margin-bottom:12px}.field label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:5px}.field input,.field textarea{width:100%;border:1px solid var(--border);border-radius:10px;padding:11px 12px;font-size:16px;font-family:inherit;background:var(--bg)}.field textarea{height:90px;resize:vertical}.hint{font-size:12px;color:var(--muted);margin-top:4px}.modal-actions{display:flex;gap:10px;margin-top:16px}.hidden{display:none}.delete-recipe{border:none;background:none;color:#d33;font-size:20px;padding:4px 8px;cursor:pointer}.search-results{margin-top:6px}.result-card{display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:8px;margin-bottom:8px;cursor:pointer}.result-card img{width:52px;height:52px;border-radius:10px;object-fit:cover}.result-name{font-weight:600;font-size:15px}.result-meta{font-size:12px;color:var(--muted)}.loading{text-align:center;color:var(--muted);padding:14px;font-size:14px}</style>
+<style>:root{--bg:#f7f5f2;--card:#ffffff;--primary:#ff6b4a;--primary-dark:#e5532f;--text:#2b2b2b;--muted:#8a8a8a;--border:#eae6e1;--green:#2e9e5b}*{box-sizing:border-box;margin:0;padding:0;}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);padding-bottom:100px;padding-bottom:calc(100px + env(safe-area-inset-bottom))}header{position:sticky;top:0;z-index:10;background:var(--primary);color:white;padding:16px 16px 12px;padding-top:calc(16px + env(safe-area-inset-top))}header h1{font-size:22px;font-weight:700}.tabs{display:flex;gap:8px;margin-top:12px}.tab{flex:1;border:none;background:rgba(255,255,255,.2);color:white;padding:10px;border-radius:12px;font-size:15px;font-weight:600}.tab.active{background:white;color:var(--primary-dark)}main{padding:16px;max-width:640px;margin:0 auto}.section-title{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:8px 2px 10px;font-weight:700}.recipe-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer;}.recipe-card.selected{border-color:var(--primary);background:#fff4f0}.recipe-emoji{font-size:34px}.recipe-info{flex:1}.recipe-name{font-weight:700;font-size:16px}.recipe-meta{font-size:13px;color:var(--muted);margin-top:3px}.check{width:26px;height:26px;border-radius:50%;border:2px solid #ccc;flex-shrink:0;display:flex;align-items:center;justify-content:center}.recipe-card.selected .check{background:var(--primary);border-color:var(--primary);color:white}.ing-row{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px}.ing-row input[type=checkbox]{width:20px;height:20px;accent-color:var(--green);flex-shrink:0}.ing-name{font-size:15px}.ing-qty{font-size:13px;color:var(--muted)}.ing-row.checked .ing-name{text-decoration:line-through;color:var(--muted)}.empty{text-align:center;color:var(--muted);padding:40px 20px;font-size:15px}footer{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);padding:12px 16px calc(12px + env(safe-area-inset-bottom));display:flex;gap:10px}.btn{flex:1;border:none;border-radius:14px;padding:14px;font-size:16px;font-weight:700;cursor:pointer}.btn-primary{background:var(--primary);color:white}.btn-primary:disabled{background:#ddd;color:#999}.btn-secondary{background:#f0ece8;color:var(--text)}.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:50;display:none;align-items:flex-end;justify-content:center}.modal-bg.open{display:flex}.modal{background:var(--card);width:100%;max-width:640px;border-radius:20px 20px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom));max-height:85vh;overflow-y:auto}.modal h2{font-size:18px;margin-bottom:14px}.field{margin-bottom:12px}.field label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:5px}.field input,.field textarea{width:100%;border:1px solid var(--border);border-radius:10px;padding:11px 12px;font-size:16px;font-family:inherit;background:var(--bg)}.field textarea{height:90px;resize:vertical}.hint{font-size:12px;color:var(--muted);margin-top:4px}.modal-actions{display:flex;gap:10px;margin-top:16px}.hidden{display:none}.delete-recipe{border:none;background:none;color:#d33;font-size:20px;padding:4px 8px;cursor:pointer}.search-results{margin-top:6px}.result-card{display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:8px;margin-bottom:8px;cursor:pointer}.result-card img{width:52px;height:52px;border-radius:10px;object-fit:cover}.result-name{font-weight:600;font-size:15px}.result-meta{font-size:12px;color:var(--muted)}.result-hint{font-size:12px;color:var(--muted);margin:4px 2px}.loading{text-align:center;color:var(--muted);padding:14px;font-size:14px}</style>
 </head>
 <body>
 <header>
@@ -102,7 +102,7 @@ document.getElementById("btnGenerate").textContent = selection.length === 0
 function deleteRecipe(id) {
 const r = recipes.find(x => x.id === id);
 if (!confirm(`Supprimer ?`)) return;
-recipes = recipes.filter(x => x.id !!= id);
+recipes = recipes.filter(x => x.id !== id);
 selection = selection.filter(x => x !== id);
 save();
 renderRecipes();
@@ -210,7 +210,7 @@ const ing = meal["strIngredient" + i];
 const mes = meal["strMeasure" + i];
 if (!ing || !ing.trim()) continue;
 const t = translate(ing.trim());
-const m = mes ? normalizeeMeasure(mes) : "";
+const m = mes ? normalizeMeasure(mes) : "";
 const skip = ["to serve", "dusting", "to taste", "as needed", "for garnish", "handful", "garnish"];
 if (m && !skip.includes(m.toLowerCase())) {
 const mes = m.replace(/^(\d+(?:[.,]\d+)?)(g|gr|kg|ml|cl|dl|l)\b/i, "$1 $2");
@@ -237,15 +237,18 @@ searchTimer = setTimeout(() => searchMeals(q), 400);
 async function searchMeals(q) {
 const res = document.getElementById("searchResults");
 try {
+let data;
+if (q) {
 const r = await fetch(`https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(q)}`);
-const data = await r.json();
-if (!data.meals) {
-res.innerHTML = `<div class="loading">Rien trouvé pour « ${escapeHtml(q)} ». Essaie en anglais (ex : chicken).</div>`;
+data = await r.json();
+}
+if (!data || !data.meals) {
+res.innerHTML = `<div class="loading">Rien trouvé pour « ${escapeHtml(q)} ». Essaie un autre mot (ex : chicken, tart, soup).</div>`;
 return;
 }
 window._mealsCache = {};
 let html = "";
-data.meals.slice(0, 6).forEach(m => {
+data.meals.slice(0, 8).forEach(m => {
 window._mealsCache[m.idMeal] = m;
 html += `<div class="result-card" data-id="${m.idMeal}" onclick="pickMeal('${m.idMeal}')">
 <img src="${m.strMealThumb}" alt="">
@@ -267,6 +270,38 @@ document.getElementById("fName").value = m.strMeal;
 document.getElementById("fIngredients").value = mealToIngredients(m).join("\n");
 document.getElementById("searchResults").innerHTML = `<div class="loading">✅ Recette « ${escapeHtml(m.strMeal)} chargée !</div>`;
 }
+async function showRandomSuggestions() {
+const res = document.getElementById("searchResults");
+res.innerHTML = `<div class="loading">Suggestions...</div>`;
+try {
+const out = [];
+const seen = new Set();
+let tries = 0;
+while (out.length < 5 && tries < 15) {
+tries++;
+const r = await fetch("https://www.themealdb.com/api/json/v1/1/random.php");
+const data = await r.json();
+const m = data.meals && data.meals[0];
+if (m && !seen.has(m.idMeal)) { seen.add(m.idMeal); out.push(m); }
+}
+if (out.length === 0) throw new Error("no suggestions");
+if (!window._mealsCache) window._mealsCache = {};
+let html = `<div class="result-hint">Suggestions du moment :</div>`;
+out.forEach(m => {
+window._mealsCache[m.idMeal] = m;
+html += `<div class="result-card" data-id="${m.idMeal}" onclick="pickMeal('${m.idMeal}')">
+<img src="${m.strMealThumb}" alt="">
+<div style="flex:1">
+<div class="result-name">${escapeHtml(m.strMeal)}</div>
+<div class="result-meta">${escapeHtml(m.strCategory || "")}${m.strArea ? " · " + escapeHtml(m.strArea) : ""}</div>
+</div>
+</div>`;
+});
+res.innerHTML = html;
+} catch (e) {
+res.innerHTML = `<div class="loading">Erreur réseau.</div>`;
+}
+}
 function openModal() {
 editId = null;
 document.getElementById("modalTitle").textContent = "Ajouter";
@@ -275,6 +310,7 @@ document.getElementById("searchResults").innerHTML = "";
 document.getElementById("fName").value = "";
 document.getElementById("fIngredients").value = "";
 document.getElementById("modalBg").classList.add("open");
+showRandomSuggestions();
 }
 function closeModal() {
 document.getElementById("modalBg").classList.remove("open");
