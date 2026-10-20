@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Mes Recettes</title>
+<style>:root{--bg:#f7f5f2;--card:#ffffff;--primary:#ff6b4a;--primary-dark:#e5532f;--text:#2b2b2b;--muted:#8a8a8a;--border:#eae6e1;--green:#2e9e5b}*{box-sizing:border-box;margin:0;padding:0;}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);padding-bottom:100px;padding-bottom:calc(100px + env(safe-area-inset-bottom))}header{position:sticky;top:0;z-index:10;background:var(--primary);color:white;padding:16px 16px 12px;padding-top:calc(16px + env(safe-area-inset-top))}header h1{font-size:22px;font-weight:700}.tabs{display:flex;gap:8px;margin-top:12px}.tab{flex:1;border:none;background:rgba(255,255,255,.2);color:white;padding:10px;border-radius:12px;font-size:15px;font-weight:600}.tab.active{background:white;color:var(--primary-dark)}main{padding:16px;max-width:640px;margin:0 auto}.section-title{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:8px 2px 10px;font-weight:700}.recipe-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer;}.recipe-card.selected{border-color:var(--primary);background:#fff4f0}.recipe-emoji{font-size:34px}.recipe-info{flex:1}.recipe-name{font-weight:700;font-size:16px}.recipe-meta{font-size:13px;color:var(--muted);margin-top:3px}.check{width:26px;height:26px;border-radius:50%;border:2px solid #ccc;flex-shrink:0;display:flex;align-items:center;justify-content:center}.recipe-card.selected .check{background:var(--primary);border-color:var(--primary);color:white}.ing-row{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px}.ing-row input[type=checkbox]{width:20px;height:20px;accent-color:var(--green);flex-shrink:0}.ing-name{font-size:15px}.ing-qty{font-size:13px;color:var(--muted)}.ing-row.checked .ing-name{text-decoration:line-through;color:var(--muted)}.empty{text-align:center;color:var(--muted);padding:40px 20px;font-size:15px}footer{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);padding:12px 16px calc(12px + env(safe-area-inset-bottom));display:flex;gap:10px}.btn{flex:1;border:none;border-radius:14px;padding:14px;font-size:16px;font-weight:700;cursor:pointer}.btn-primary{background:var(--primary);color:white}.btn-primary:disabled{background:#ddd;color:#999}.btn-secondary{background:#f0ece8;color:var(--text)}.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:50;display:none;align-items:flex-end;justify-content:center}.modal-bg.open{display:flex}.modal{background:var(--card);width:100%;max-width:640px;border-radius:20px 20px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom));max-height:85vh;overflow-y:auto}.modal h2{font-size:18px;margin-bottom:14px}.field{margin-bottom:12px}.field label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:5px}.field input,.field textarea{width:100%;border:1px solid var(--border);border-radius:10px;padding:11px 12px;font-size:16px;font-family:inherit;background:var(--bg)}.field textarea{height:90px;resize:vertical}.hint{font-size:12px;color:var(--muted);margin-top:4px}.modal-actions{display:flex;gap:10px;margin-top:16px}.hidden{display:none}.delete-recipe{border:none;background:none;color:#d33;font-size:20px;padding:4px 8px;cursor:pointer}.search-results{margin-top:6px}.result-card{display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:8px;margin-bottom:8px;cursor:pointer}.result-card img{width:52px;height:52px;border-radius:10px;object-fit:cover}.result-name{font-weight:600;font-size:15px}.result-meta{font-size:12px;color:var(--muted)}.loading{text-align:center;color:var(--muted);padding:14px;font-size:14px}</style>
+</head>
+<body>
+<header>
+<h1>🍽️ Mes Recettes</h1>
+<div class="tabs">
+<button class="tab active" id="tabRecipes" onclick="showTab('recipes')">Recettes</button>
+<button class="tab" id="tabList" onclick="showTab('list')">Ma liste 🛒</button>
+</div>
+</header>
+<main id="viewRecipes">
+<div class="section-title">Mes recettes</div>
+<div id="recipeList"></div>
+<button class="btn btn-secondary" style="width:100%; margin-top:10px;" onclick="openModal()">➕ Ajouter</button>
+</main>
+<main id="viewList" class="hidden">
+<div class="section-title">À acheter</div>
+<div id="ingredientList"></div>
+<button class="btn btn-secondary" style="width:100%; margin-top:10px;" onclick="clearChecked()">Décocher tout</button>
+</main>
+<footer>
+<button class="btn btn-secondary" id="btnClear" onclick="clearSelection()">Tout retirer</button>
+<button class="btn btn-primary" id="btnGenerate" onclick="showTab('list')" disabled>🛒 Voir ma liste</button>
+</footer>
+<div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()">
+<div class="modal">
+<h2 id="modalTitle">Ajouter</h2>
+<div class="field">
+<label>Chercher une recette</label>
+<input id="fSearch" placeholder="carbonara, chicken..." autocomplete="off" oninput="onSearchInput()">
+</div>
+<div id="searchResults" class="search-results"></div>
+<div class="field">
+<label>Nom de la recette</label>
+<input id="fName" placeholder="Ex : Pâtes carbonara">
+</div>
+<div class="field">
+<label>Ingrédients (modifiables)</label>
+<textarea id="fIngredients" placeholder="Ou saisis-les à la main"></textarea>
+<div class="hint">Ex : 200 g de farine, 2 œufs</div>
+</div>
+<div class="modal-actions">
+<button class="btn btn-secondary" onclick="closeModal()">Annuler</button>
+<button class="btn btn-primary" onclick="saveRecipe()">Enregistrer</button>
+</div>
+</div>
+</div>
+<script>const DEFAULT_RECIPES = [];
+let recipes = JSON.parse(localStorage.getItem("recipes") || "null") || DEFAULT_RECIPES.slice();
+let selection = JSON.parse(localStorage.getItem("selection") || "[]");
+let checkedItems = JSON.parse(localStorage.getItem("checkedItems") || "[]");
+let editId = null;
+function save() {
+localStorage.setItem("recipes", JSON.stringify(recipes));
+localStorage.setItem("selection", JSON.stringify(selection));
+localStorage.setItem("checkedItems", JSON.stringify(checkedItems));
+}
+function showTab(tab) {
+document.getElementById("viewRecipes").classList.toggle("hidden", tab !== "recipes");
+document.getElementById("viewList").classList.toggle("hidden", tab !== "list");
+document.getElementById("tabRecipes").classList.toggle("active", tab === "recipes");
+document.getElementById("tabList").classList.toggle("active", tab === "list");
+document.getElementById("btnGenerate").disabled = selection.length === 0;
+if (tab === "list") renderIngredients();
+window.scrollTo(0, 0);
+}
+function toggleRecipe(id) {
+const i = selection.indexOf(id);
+if (i === -1) selection.push(id); else selection.splice(i, 1);
+save();
+renderRecipes();
+}
+function renderRecipes() {
+const el = document.getElementById("recipeList");
+el.innerHTML = recipes.map(r => {
+const sel = selection.includes(r.id);
+return `<div class="recipe-card ${sel ? "selected" : ""}" onclick="toggleRecipe('${r.id}')">
+<div class="recipe-emoji">${r.emoji || ""}</div>
+<div class="recipe-info">
+<div class="recipe-name">${escapeHtml(r.name)}</div>
+<div class="recipe-meta">${r.ingredients.length} ingrédients</div>
+</div>
+<div style="display:flex;align-items:center;gap:6px">
+<button class="delete-recipe" onclick="event.stopPropagation();deleteRecipe('${r.id}')">🗑️</button>
+<div class="check">${sel ? "✓" : ""}</div>
+</div>
+</div>`;
+}).join("") || `<div class="empty">Aucune recette pour l'instant.</div>`;
+document.getElementById("btnGenerate").disabled = selection.length === 0;
+document.getElementById("btnGenerate").textContent = selection.length === 0
+? "🛒 Voir ma liste"
+: `🛒 Ma liste (${selection.length})`;
+}
+function deleteRecipe(id) {
+const r = recipes.find(x => x.id === id);
+if (!confirm(`Supprimer ?`)) return;
+recipes = recipes.filter(x => x.id !!= id);
+selection = selection.filter(x => x !== id);
+save();
+renderRecipes();
+}
+const GRAMS = { g: 1, gr: 1, gramme: 1, grammes: 1, kg: 1000, kilo: 1000, kilos: 1000 };
+const LITERS = { l: 1, litre: 1, litres: 1, litre: 1, ml: 0.001, cl: 0.01, dl: 0.1 };
+function parseIngredient(line) {
+const m = line.trim().match(/^(\d+(?:[.,]\d+)?)\s*(kg|g|gr|grammes?|gramme|l|litres?|litre|ml|cl|dl|kilo|kilos)\s+(.+)$/i);
+if (!m) return { name: line.trim(), qty: null };
+let val = parseFloat(m[1].replace(",", "."));
+const unitRaw = m[2].toLowerCase();
+let unit = unitRaw.startsWith("k") && unitRaw !== "kilo" && unitRaw !== "kilos" ? "g" : (unitRaw === "kilo" || unitRaw === "kilos" ? "g" : (GRAMS[unitRaw] ? "g" : "l"));
+if (unit === "g") val = val * GRAMS[unitRaw];
+else if (unit === "l") val = val * LITERS[unitRaw];
+const cleanName = m[3].trim().replace(/^(de\s+|du\s+|des\s+|d')/i, "");
+return { name: cleanName, qty: val, unit, raw: `${m[1]} ${m[2]}` };
+}
+function formatQty(total, unit) {
+if (unit === "g") {
+if (total >= 1000) return (Math.round(total / 100) / 10) + " kg";
+return Math.round(total) + " g";
+}
+if (unit === "l") {
+if (total >= 1) return (Math.round(total * 10) / 10) + " L";
+return Math.round(total * 1000) + " ml";
+}
+return total;
+}
+function buildAggregated() {
+const map = {};
+for (const id of selection) {
+const r = recipes.find(x => x.id === id);
+if (!r) continue;
+for (const line of r.ingredients) {
+const p = parseIngredient(line);
+const key = normalizeName(p.name);
+if (!map[key]) map[key] = { name: p.name, qty: null, unit: null, units: [], count: 0 };
+if (p.qty != null && map[key].qty != null && map[key].unit === p.unit) {
+map[key].qty += p.qty;
+} else if (p.qty != null && map[key].qty == null) {
+map[key].qty = p.qty; map[key].unit = p.unit;
+} else {
+map[key].units.push(line);
+}
+map[key].count++;
+}
+}
+return Object.values(map).sort((a, b) => a.name.localeCompare(b.name, "fr"));
+}
+function normalizeName(n) {
+return n.toLowerCase().replace(/\b(de |du |des |d')/g, "").replace(/\s+/g, " ").trim();
+}
+function renderIngredients() {
+const el = document.getElementById("ingredientList");
+const items = buildAggregated();
+el.innerHTML = items.length === 0
+? `<div class="empty">Coche des recettes pour générer ta liste.</div>`
+: items.map(it => {
+const de = /^(de |du |d')/i.test(it.name) ? " " : " de ";
+const label = it.qty != null ? `${formatQty(it.qty, it.unit)}${de}${it.name}` : it.name;
+const detail = it.units.length && it.qty != null ? it.units.join(" ; ") : "";
+const key = "ing:" + normalizeName(it.name);
+const ck = checkedItems.includes(key);
+return `<div class="ing-row ${ck ? "checked" : ""}" onclick="toggleCheck('${escapeAttr(key)}')">
+<input type="checkbox" ${ck ? "checked" : ""} onclick="event.stopPropagation();toggleCheck('${escapeAttr(key)}')">
+<div style="flex:1">
+<div class="ing-name">${escapeHtml(label)}</div>
+${detail ? `<div class="ing-qty">dont ${escapeHtml(detail)}</div>` : ""}
+</div>
+</div>`;
+}).join("");
+}
+function toggleCheck(key) {
+const i = checkedItems.indexOf(key);
+if (i === -1) checkedItems.push(key); else checkedItems.splice(i, 1);
+save();
+renderIngredients();
+}
+function clearChecked() {
+checkedItems = [];
+save();
+renderIngredients();
+}
+function clearSelection() {
+if (selection.length && !confirm("Tout retirer ?")) return;
+selection = [];
+checkedItems = [];
+save();
+renderRecipes();
+showTab("recipes");
+}
+const TRANSLATIONS = {"Chicken":"Poulet","Beef":"Bœuf","Pork":"Porc","Eggs":"Œufs","Butter":"Beurre","Milk":"Lait","Cream":"Crème","Cheese":"Fromage","Tomatoes":"Tomates","Onion":"Oignon","Garlic":"Ail","Potatoes":"Pommes de terre","Carrots":"Carottes","Rice":"Riz","Pasta":"Pâtes","Olive Oil":"Huile d'olive","Flour":"Farine","Sugar":"Sucre","Salt":"Sel","Pepper":"Poivre","Bacon":"Lardons","Mushrooms":"Champignons","Lemons":"Citrons"};
+function translate(name) {
+const t = TRANSLATIONS[name];
+if (t) return t;
+return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+}
+function normalizeMeasure(m) {
+return m.trim().replace(/\s+/g, " ");
+}
+function mealToIngredients(meal) {
+const list = [];
+for (let i = 1; i <= 20; i++) {
+const ing = meal["strIngredient" + i];
+const mes = meal["strMeasure" + i];
+if (!ing || !ing.trim()) continue;
+const t = translate(ing.trim());
+const m = mes ? normalizeeMeasure(mes) : "";
+const skip = ["to serve", "dusting", "to taste", "as needed", "for garnish", "handful", "garnish"];
+if (m && !skip.includes(m.toLowerCase())) {
+const mes = m.replace(/^(\d+(?:[.,]\d+)?)(g|gr|kg|ml|cl|dl|l)\b/i, "$1 $2");
+if (/^\d+(\ce*(g|gr|kg|ml|cl|dl|l|litres?))?\b/i.test(mes) && !/\bclov(es|e)\b|#\tbs\b|#\tsp\b#\|bucps?\b/i.test(mes)) {
+list.push(`${mes} de ${t}`);
+} else {
+list.push(`${mes} ${t}`);
+}
+} else {
+list.push(t);
+}
+}
+return list;
+}
+let searchTimer = null;
+function onSearchInput() {
+const q = document.getElementById("fSearch").value.trim();
+const res = document.getElementById("searchResults");
+clearTimeout(searchTimer);
+if (q.length < 2) { res.innerHTML = ""; return; }
+res.innerHTML = `<div class="loading">Recherche...</div>`;
+searchTimer = setTimeout(() => searchMeals(q), 400);
+}
+async function searchMeals(q) {
+const res = document.getElementById("searchResults");
+try {
+const r = await fetch(`https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(q)}`);
+const data = await r.json();
+if (!data.meals) {
+res.innerHTML = `<div class="loading">Rien trouvé pour « ${escapeHtml(q)} ». Essaie en anglais (ex : chicken).</div>`;
+return;
+}
+window._mealsCache = {};
+let html = "";
+data.meals.slice(0, 6).forEach(m => {
+window._mealsCache[m.idMeal] = m;
+html += `<div class="result-card" data-id="${m.idMeal}" onclick="pickMeal('${m.idMeal}')">
+<img src="${m.strMealThumb}" alt="">
+<div style="flex:1">
+<div class="result-name">${escapeHtml(m.strMeal)}</div>
+<div class="result-meta">${escapeHtml(m.strCategory || "")}${m.strArea ? " · " + escapeHtml(m.strArea) : ""}</div>
+</div>
+</div>`;
+});
+res.innerHTML = html;
+} catch (e) {
+res.innerHTML = `<div class="loading">Erreur réseau.</div>`;
+}
+}
+function pickMeal(id) {
+const m = window._mealsCache && window._mealsCache[id];
+if (!m) return;
+document.getElementById("fName").value = m.strMeal;
+document.getElementById("fIngredients").value = mealToIngredients(m).join("\n");
+document.getElementById("searchResults").innerHTML = `<div class="loading">✅ Recette « ${escapeHtml(m.strMeal)} chargée !</div>`;
+}
+function openModal() {
+editId = null;
+document.getElementById("modalTitle").textContent = "Ajouter";
+document.getElementById("fSearch").value = "";
+document.getElementById("searchResults").innerHTML = "";
+document.getElementById("fName").value = "";
+document.getElementById("fIngredients").value = "";
+document.getElementById("modalBg").classList.add("open");
+}
+function closeModal() {
+document.getElementById("modalBg").classList.remove("open");
+}
+function saveRecipe() {
+const name = document.getElementById("fName").value.trim();
+const emoji = "";
+const ingredients = document.getElementById("fIngredients").value
+.split("\n").map(s => s.trim()).filter(Boolean);
+if (!name || ingredients.length === 0) {
+alert("Nom + ingrédients requis.");
+return;
+}
+recipes.push({ id: "r" + Date.now(), name, emoji, ingredients });
+save();
+closeModal();
+renderRecipes();
+}
+function escapeHtml(s) {
+return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+function escapeAttr(s) {
+return s.replace(/'/g, "\\'");
+}
+renderRecipes();</script>
+</body>
+</html>
