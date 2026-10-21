@@ -6,7 +6,14 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Mes Recettes</title>
-<style>:root{--bg:#f7f5f2;--card:#ffffff;--primary:#ff6b4a;--primary-dark:#e5532f;--text:#2b2b2b;--muted:#8a8a8a;--border:#eae6e1;--green:#2e9e5b}*{box-sizing:border-box;margin:0;padding:0;}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);padding-bottom:100px;padding-bottom:calc(100px + env(safe-area-inset-bottom))}header{position:sticky;top:0;z-index:10;background:var(--primary);color:white;padding:16px 16px 12px;padding-top:calc(16px + env(safe-area-inset-top))}header h1{font-size:22px;font-weight:700}.tabs{display:flex;gap:8px;margin-top:12px}.tab{flex:1;border:none;background:rgba(255,255,255,.2);color:white;padding:10px;border-radius:12px;font-size:15px;font-weight:600}.tab.active{background:white;color:var(--primary-dark)}main{padding:16px;max-width:640px;margin:0 auto}.section-title{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:8px 2px 10px;font-weight:700}.recipe-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer;}.recipe-card.selected{border-color:var(--primary);background:#fff4f0}.recipe-emoji{font-size:34px}.recipe-info{flex:1}.recipe-name{font-weight:700;font-size:16px}.recipe-meta{font-size:13px;color:var(--muted);margin-top:3px}.check{width:26px;height:26px;border-radius:50%;border:2px solid #ccc;flex-shrink:0;display:flex;align-items:center;justify-content:center}.recipe-card.selected .check{background:var(--primary);border-color:var(--primary);color:white}.ing-row{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px}.ing-row input[type=checkbox]{width:20px;height:20px;accent-color:var(--green);flex-shrink:0}.ing-name{font-size:15px}.ing-qty{font-size:13px;color:var(--muted)}.ing-row.checked .ing-name{text-decoration:line-through;color:var(--muted)}.empty{text-align:center;color:var(--muted);padding:40px 20px;font-size:15px}footer{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);padding:12px 16px calc(12px + env(safe-area-inset-bottom));display:flex;gap:10px}.btn{flex:1;border:none;border-radius:14px;padding:14px;font-size:16px;font-weight:700;cursor:pointer}.btn-primary{background:var(--primary);color:white}.btn-primary:disabled{background:#ddd;color:#999}.btn-secondary{background:#f0ece8;color:var(--text)}.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:50;display:none;align-items:flex-end;justify-content:center}.modal-bg.open{display:flex}.modal{background:var(--card);width:100%;max-width:640px;border-radius:20px 20px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom));max-height:85vh;overflow-y:auto}.modal h2{font-size:18px;margin-bottom:14px}.field{margin-bottom:12px}.field label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:5px}.field input,.field textarea{width:100%;border:1px solid var(--border);border-radius:10px;padding:11px 12px;font-size:16px;font-family:inherit;background:var(--bg)}.field textarea{height:90px;resize:vertical}.hint{font-size:12px;color:var(--muted);margin-top:4px}.modal-actions{display:flex;gap:10px;margin-top:16px}.hidden{display:none}.delete-recipe{border:none;background:none;color:#d33;font-size:20px;padding:4px 8px;cursor:pointer}.search-results{margin-top:6px}.result-card{display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:8px;margin-bottom:8px;cursor:pointer}.result-card img{width:52px;height:52px;border-radius:10px;object-fit:cover}.result-name{font-weight:600;font-size:15px}.result-meta{font-size:12px;color:var(--muted)}.servings{display:flex;align-items:center;gap:6px;font-size:12px}.servings button{width:24px;height:24px;border-radius:50%;border:1px solid var(--border);background:#fff;font-size:15px;line-height:1;cursor:pointer;padding:0}.servings span{color:var(--muted);white-space:nowrap}.result-hint{font-size:12px;color:var(--muted);margin:4px 2px}.loading{text-align:center;color:var(--muted);padding:14px;font-size:14px}</style>
+<style>:root{--bg:#f7f5f2;--card:#ffffff;--primary:#ff6b4a;--primary-dark:#e5532f;--text:#2b2b2b;--muted:#8a8a8a;--border:#eae6e1;--green:#2e9e5b}*{box-sizing:border-box;margin:0;padding:0;}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);padding-bottom:100px;padding-bottom:calc(100px + env(safe-area-inset-bottom))}header{position:sticky;top:0;z-index:10;background:var(--primary);color:white;padding:16px 16px 12px;padding-top:calc(16px + env(safe-area-inset-top))}header h1{font-size:22px;font-weight:700}.tabs{display:flex;gap:8px;margin-top:12px}.tab{flex:1;border:none;background:rgba(255,255,255,.2);color:white;padding:10px;border-radius:12px;font-size:15px;font-weight:600}.tab.active{background:white;color:var(--primary-dark)}main{padding:16px;max-width:640px;margin:0 auto}.section-title{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:8px 2px 10px;font-weight:700}.recipe-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer;}.recipe-card.selected{border-color:var(--primary);background:#fff4f0}.recipe-emoji{font-size:34px}.recipe-info{flex:1}.recipe-name{font-weight:700;font-size:16px}.recipe-meta{font-size:13px;color:var(--muted);margin-top:3px}.check{width:26px;height:26px;border-radius:50%;border:2px solid #ccc;flex-shrink:0;display:flex;align-items:center;justify-content:center}.recipe-card.selected .check{background:var(--primary);border-color:var(--primary);color:white}.ing-row{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px}.ing-row input[type=checkbox]{width:20px;height:20px;accent-color:var(--green);flex-shrink:0}.ing-name{font-size:15px}.ing-qty{font-size:13px;color:var(--muted)}.ing-row.checked .ing-name{text-decoration:line-through;color:var(--muted)}.empty{text-align:center;color:var(--muted);padding:40px 20px;font-size:15px}footer{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);padding:12px 16px calc(12px + env(safe-area-inset-bottom));display:flex;gap:10px}.btn{flex:1;border:none;border-radius:14px;padding:14px;font-size:16px;font-weight:700;cursor:pointer}.btn-primary{background:var(--primary);color:white}.btn-primary:disabled{background:#ddd;color:#999}.btn-secondary{background:#f0ece8;color:var(--text)}.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:50;display:none;align-items:flex-end;justify-content:center}.modal-bg.open{display:flex}.modal{background:var(--card);width:100%;max-width:640px;border-radius:20px 20px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom));max-height:85vh;overflow-y:auto}.modal h2{font-size:18px;margin-bottom:14px}.field{margin-bottom:12px}.field label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:5px}.field input,.field textarea{width:100%;border:1px solid var(--border);border-radius:10px;padding:11px 12px;font-size:16px;font-family:inherit;background:var(--bg)}.field textarea{height:90px;resize:vertical}.hint{font-size:12px;color:var(--muted);margin-top:4px}.modal-actions{display:flex;gap:10px;margin-top:16px}.hidden{display:none}.delete-recipe{border:none;background:none;color:#d33;font-size:20px;padding:4px 8px;cursor:pointer}.search-results{margin-top:6px}.result-card{display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:8px;margin-bottom:8px;cursor:pointer}.result-card img{width:52px;height:52px;border-radius:10px;object-fit:cover}.result-name{font-weight:600;font-size:15px}.result-meta{font-size:12px;color:var(--muted)}.servings{display:flex;align-items:center;gap:6px;font-size:12px}.servings button{width:24px;height:24px;border-radius:50%;border:1px solid var(--border);background:#fff;font-size:15px;line-height:1;cursor:pointer;padding:0}.servings span{color:var(--muted);white-space:nowrap}.type-choice{display:flex;flex-direction:column;align-items:center;gap:6px;width:100%;padding:14px 8px;border:1px solid var(--border);border-radius:14px;background:var(--card);font-size:15px;font-weight:600;color:var(--text);cursor:pointer;margin-bottom:8px}
+.type-choice:active{background:#fff4f0;border-color:var(--primary)}
+.tc-emoji{font-size:30px}
+#typeChoices{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.back-btn{border:none;background:none;color:var(--muted);font-size:13px;padding:6px 0;cursor:pointer;width:100%}
+.chip-row{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;padding:2px 0 6px;-webkit-overflow-scrolling:touch}
+.chip{border:1px solid var(--border);border-radius:16px;padding:6px 12px;font-size:12px;background:var(--card);white-space:nowrap;cursor:pointer;flex-shrink:0}
+.chip.on{background:var(--primary);color:#fff;border-color:var(--primary)}.result-hint{font-size:12px;color:var(--muted);margin:4px 2px}.loading{text-align:center;color:var(--muted);padding:14px;font-size:14px}</style>
 </head>
 <body>
 <header>
@@ -33,7 +40,18 @@
 <div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()">
 <div class="modal">
 <h2 id="modalTitle">Ajouter</h2>
-<div class="field">
+<div id="step1">
+<div class="section-title" style="margin-top:0">Quoi ?</div>
+<div id="typeChoices">
+<button type="button" class="type-choice" onclick="chooseType('Apero')"><span class="tc-emoji">🥂</span>Apéro</button>
+<button type="button" class="type-choice" onclick="chooseType('Starter')"><span class="tc-emoji">🥗</span>Entrée</button>
+<button type="button" class="type-choice" onclick="chooseType('Main')"><span class="tc-emoji">🍽️</span>Plat</button>
+<button type="button" class="type-choice" onclick="chooseType('Dessert')"><span class="tc-emoji">🍰</span>Dessert</button>
+</div>
+</div>
+<div id="step2" style="display:none">
+<div id="areaChips" class="chip-row"></div>
+<div class="field" style="margin-bottom:6px">
 <label>Chercher une recette</label>
 <input id="fSearch" placeholder="carbonara, chicken..." autocomplete="off" oninput="onSearchInput()">
 </div>
@@ -48,6 +66,8 @@
 <textarea id="fIngredients" placeholder="Ou saisis-les à la main"></textarea>
 <div class="hint">Ex : 200 g de farine, 2 œufs</div>
 </div>
+</div>
+<button type="button" class="back-btn" onclick="backToStep1()">← Changer de type</button>
 </div>
 <div class="field" id="servingsField" style="display:none">
 <label>Pour combien de personnes ?</label>
@@ -217,7 +237,7 @@ save();
 renderRecipes();
 showTab("recipes");
 }
-const TRANSLATIONS = {"Chicken":"Poulet","Beef":"Bœuf","Pork":"Porc","Eggs":"Œufs","Egg":"Œuf","Butter":"Beurre","Milk":"Lait","Cream":"Crème","Double Cream":"Crème épaisse","Cheese":"Fromage","Cheddar":"Cheddar","Parmesan":"Parmesan","Mozzarella":"Mozzarella","Feta":"Feta","Tomatoes":"Tomates","Tomato":"Tomate","Onion":"Oignon","Red Onions":"Oignons rouges","Garlic":"Ail","Potatoes":"Pommes de terre","Carrots":"Carottes","Rice":"Riz","Pasta":"Pâtes","Spaghetti":"Spaghetti","Olive Oil":"Huile d'olive","Vegetable Oil":"Huile végétale","Flour":"Farine","Plain Flour":"Farine","Sugar":"Sucre","Caster Sugar":"Sucre en poudre","Salt":"Sel","Pepper":"Poivre","Black Pepper":"Poivre noir","Bacon":"Lardons","Pancetta":"Pancetta","Mushrooms":"Champignons","Courgettes":"Courgettes","Peas":"Petits pois","Lemons":"Citrons","Lemon":"Citron","Parsley":"Persil","Basil":"Basilic","Thyme":"Thym","Rosemary":"Romarin","Oregano":"Origan","Cumin":"Cumin","Paprika":"Paprika","Cinnamon":"Cannelle","Nutmeg":"Muscade","Soy Sauce":"Sauce soja","Honey":"Miel","Breadcrumbs":"Chapelure","Bread":"Pain","Apples":"Pommes","Pears":"Poires","Strawberries":"Fraises","Chocolate":"Chocolat","Yoghurt":"Yaourt","Coconut Milk":"Lait de coco","Chickpeas":"Pois chiches","Lentils":"Lentilles","Tuna":"Thon","Prawns":"Crevettes","Sausages":"Saucisses","Ham":"Jambon","Turkey":"Dinde","Duck":"Canard","Lamb":"Agneau","Cauliflower":"Chou-fleur","Broccoli":"Brocoli","Spinach":"Épinards","Lettuce":"Laitue","Cucumber":"Concombre","Ginger":"Gingembre","Coriander":"Coriandre","Mustard":"Moutarde","Vinegar":"Vinaigre","White Wine":"Vin blanc","Red Wine":"Vin rouge","Stock":"Bouillon","Chicken Stock":"Bouillon de poule","Beef Stock":"Bouillon de bœuf","Vegetable Stock":"Bouillon de légumes","Water":"Eau","Puff Pastry":"Pâte feuilletée","Egg Yolks":"Jaunes d'œufs","Almonds":"Amandes","Salmon":"Saumon","Fish":"Poisson"};
+const TRANSLATIONS = {"Avocado":"Avocat","Apple Cider Vinegar":"Vinaigre de cidre","Asparagus":"Asperges","Aubergine":"Aubergine","Baby Plum Tomatoes":"Tomates cerises","Bacon":"Lardons","Baking Powder":"Levure chimique","Balsamic Vinegar":"Vinaigre balsamique","Basil":"Basilic","Basil Leaves":"Feuilles de basilic","Basmati Rice":"Riz basmati","Bay Leaf":"Feuille de laurier","Bay Leaves":"Feuilles de laurier","Beef Brisket":"Poitrine de bœuf","Beef Fillet":"Filet de bœuf","Beef Gravy":"Sauce au bœuf","Beef Stock":"Bouillon de bœuf","Bicarbonate Of Soda":"Bicarbonate de soude","Biryani Masala":"Épices biryani","Black Pepper":"Poivre noir","Black Treacle":"Mélasse","Borlotti Beans":"Haricots borlotti","Bowtie Pasta":"Pâtes papillon","Bramley Apples":"Pommes Bramley","Brandy":"Cognac","Bread":"Pain","Breadcrumbs":"Chapelure","Broccoli":"Brocoli","Brown Lentils":"Lentilles brunes","Brown Rice":"Riz complet","Brown Sugar":"Sucre roux","Butter":"Beurre","Cacao":"Cacao","Cajun":"Épices cajun","Canned Tomatoes":"Tomates en conserve","Cannellini Beans":"Haricots cannellini","Cardamom":"Cardamome","Carrots":"Carottes","Cashew Nuts":"Cajous","Cashews":"Cajous","Caster Sugar":"Sucre en poudre","Cayenne Pepper":"Piment de Cayenne","Celeriac":"Céleri-rave","Celery":"Céleri","Celery Salt":"Sel de céleri","Challots":"Échalotes","Charlotte Potatoes":"Pommes de terre Charlotte","Cheddar Cheese":"Cheddar","Cheese Curds":"Fromage frais","Cherry Tomatoes":"Tomates cerises","Chestnut Mushroom":"Champignons de Paris","Chicken Breast":"Blanc de poulet","Chicken Breasts":"Blancs de poulet","Chicken Legs":"Cuisses de poulet","Chicken Thighs":"Cuisses de poulet","Chicken Stock":"Bouillon de volaille","Chickpeas":"Pois chiches","Chili Powder":"Piment en poudre","Chilled Butter":"Beurre froid","Chilli":"Piment","Chilli Powder":"Piment en poudre","Chinese Broccoli":"Brocoli chinois","Chocolate Chips":"Pépites de chocolat","Chopped Onion":"Oignon émincé","Chopped Parsley":"Persil haché","Chopped Tomatoes":"Tomates concassées","Chorizo":"Chorizo","Christmas Pudding":"Pudding de Noël","Cilantro":"Coriandre fraîche","Cinnamon":"Cannelle","Cinnamon Stick":"Bâton de cannelle","Cloves":"Girofle","Cocoa":"Cacao","Coconut Cream":"Crème de coco","Coconut Milk":"Lait de coco","Colby Jack Cheese":"Fromage Colby","Cold Water":"Eau froide","Condensed Milk":"Lait condensé","Coriander":"Coriandre","Couscous":"Couscous","Cranberries":"Canneberges","Cranberry Juice":"Jus de cranberry","Cream":"Crème","Cream Cheese":"Fromage à tartiner","Creme Fraiche":"Crème fraîche","Cucumber":"Concombre","Cumin":"Cumin","Curry Powder":"Curry en poudre","Dark Chocolate":"Chocolat noir","Demerara Sugar":"Sucre demerara","Dijon Mustard":"Moutarde de Dijon","Dill":"Aneth","Double Cream":"Crème épaisse","Dried Apricots":"Abricots secs","Dried Chilli":"Piment séché","Dried Oregano":"Origan séché","Dried Raisins":"Raisins secs","Duck Legs":"Cuisses de canard","Eggplant":"Aubergine","Eggs":"Œufs","Egg":"Œuf","Egg Yolks":"Jaunes d'œufs","Egg Whites":"Blancs d'œufs","Fennel":"Fenouil","Fennel Seeds":"Graines de fenouil","Fenugreek":"Fenugrec","Fish Sauce":"Sauce de poisson","Flaked Almonds":"Amandes effilées","Flour":"Farine","Plain Flour":"Farine","Fresh Basil":"Basilic frais","Fresh Chilli":"Piment frais","Fresh Coriander":"Coriandre fraîche","Fresh Cream":"Crème fraîche","Garlic":"Ail","Garlic Clove":"Gousse d'ail","Garlic Cloves":"Gousses d'ail","Garlic Salt":"Ail en poudre","Ginger":"Gingembre","Golden Syrop":"Sirop doré","Grana Padano":"Grana Padano","Granulated Sugar":"Sucre en grains","Green Lentils":"Lentilles vertes","Ground Almonds":"Poudre d'amandes","Ground Cumin":"Cumin moulu","Garam Masala":"Garam masala","Harissa":"Harissa","Hazelnuts":"noisettes","Honey":"Miel","Horseradish":"Raifort","Hot Beef Stock":"Bouillon de bœuf chaud","Icing Sugar":"Sucre glace","Jalapeno":"Jalapeño","Jerusalem Artichoke":"Topinambour","Kale":"Chou kale","Ketchup":"Ketchup","Lamb Loin":"Filet d'agneau","Lamb Mince":"Viande d'agneau hachée","Leek":"Poireau","Leeks":"Poireaux","Lemon Juice":"Jus de citron","Lemons":"Citrons","Lemon":"Citron","Lentils":"Lentilles","Lettuce":"Laitue","Limes":"Citrons verts","Lime":"Citron vert","Mace":"Muscade","Madeira":"Madère","Malt Vinegar":"Vinaigre de malt","Mango":"Mangue","Maple Syrup":"Sirop d'érable","Marjoram":"Marjolaine","Mascarpone":"Mascarpone","Milk":"Lait","Minced Beef":"Bœuf haché","Mint":"Menthe","Mozzarella":"Mozzarella","Mushrooms":"Champignons","Mussels":"Moules","Mustard":"Moutarde","Mustard Seeds":"Graines de moutarde","Nutmeg":"Muscade","Oatmeal":"Flocons d'avoine","Olive Oil":"Huile d'olive","Olives":"Olivier/Olives","Onion":"Oignon","Onions":"Oignons","Onion Salt":"Sel d'oignon","Oranges":"Oranges","Oregano":"Origan","Oyster Sauce":"Sauce d'huître","Paprika":"Paprika","Parsley":"Persil","Parsnips":"Panais","Passata":"Passata (tomates)","Pasta":"Pâtes","Peanut Oil":"Huile d'arachide","Peanuts":"Arachides","Peas":"Petits pois","Pecans":"Pécan","Pepper":"Poivre","Peppercorns":"Grains de poivre","Pine Nuts":"Pignons","Pistachio Nuts":"Pistaches","Plum Tomatoes":"Tomates","Pork":"Porc","Pork Belly":"Poitrine de porc","Pork Chops":"Côtes de porc","Pork Loin":"Filet de porc","Potatoes":"Pommes de terre","Potato":"Pomme de terre","Prawns":"Crevettes","Puff Pastry":"Pâte feuilletée","Pumpkin":"Potiron","Quail's Eggs":"Œufs de caille","Raisins":"Raisins secs","Rapeseed Oil":"Huile de colza","Raspberries":"Framboises","Red Lentils":"Lentilles corail","Red Onion":"Oignon rouge","Red Onions":"Oignons rouges","Red Pepper":"Poivron rouge","Red Peppers":"Poivrons rouges","Red Wine":"Vin rouge","Rhubarb":"Rhubarbe","Rice":"Riz","Rice Noodles":"Nouilles de riz","Ricotta":"Ricotta","Rosemary":"Romarin","Saffron":"Safran","Sage":"Sauge","Salmon":"Saumon","Salsa":"Salsa","Salt":"Sel","Sausages":"Saucisses","Scallions":"Ciboules","Shallots":"Échalotes","Sherry":"Sherry","Soy Sauce":"Sauce soja","Spinach":"Épinards","Spring Onion":"Ciboule","Spring Onions":"Ciboules","Squash":"Courge","Stock":"Bouillon","Strawberries":"Fraises","Strong Flour":"Farine de gruau","Sugar":"Sucre","Sun-Dried Tomatoes":"Tomates séchées","Sweetcorn":"Maïs","Sweet Potato":"Patate douce","Tagliatelle":"Tagliatelles","Tamarind":"Tamarin","Tarragon":"Estragon","Thyme":"Thym","Tofu":"Tofu","Tomatoes":"Tomates","Tomato":"Tomate","Tomato Ketchup":"Ketchup","Tomato Puree":"Concentré de tomates","Tuna":"Thon","Turmeric":"Curcuma","Vanilla":"Vanille","Vegetable Oil":"Huile végétale","Vegetable Stock":"Bouillon de légumes","Vermicelli":"Vermicelles","Vinegar":"Vinaigre","Water":"Eau","Watercress":"Cresson","White Chocolate":"Chocolat blanc","White Flour":"Farine blanche","White Wine":"Vin blanc","Whole Wheat Flour":"Farine complète","Wild Rice":"Riz sauvage","Worcestershire Sauce":"Sauce Worcestershire","Yeast":"Levure","Yellow Pepper":"Poivron jaune","Yoghurt":"Yaourt","Yogurt":"Yaourt","Zucchini":"Courgette","Courgettes":"Courgettes","Beef":"Bœuf","Chicken":"Poulet","Cheddar":"Cheddar","Cheese":"Fromage","Feta":"Feta","Chickpea Flour":"Farine de pois chiches","Semolina":"Semoule","Sesame Oil":"Huile de sésame","Sesame Seeds":"Graines de sésame","Star Anise":"Anis étoilé","Chestnuts":"Châtaignes","Pecorino":"Pecorino","Lamb":"Agneau","Turkey":"Dinde","Duck":"Canard","Ham":"Jambon","Bacon Rashers":"Tranches de lard","Basiliccio":"Basilic","Bouillon":"Bouillon","Cajun Seasoning":"Assaisonnement cajun","Cannelle":"Cannelle","Cardamom Pods":"Gousses de cardamome","Cayenne":"Cayenne","Cherry Tomatoes1":"Tomates cerises","Chicken Breast Fillets":"Filets de poulet","Chives":"Ciboulette","Cocoa Powder":"Cacao en poudre","Coconut":"Noix de coco","Coconut Oil":"Huile de coco","Coriander Seeds":"Graines de coriandre","Cornflour":"Fécule de maïs","Cornstarch":"Fécule de maïs","Cottage Cheese":"Fromage blanc","Cream Cracker":"Biscuit salé","Crème Fraîche":"Crème fraîche","Cumin Seeds":"Graines de cumin","Dark Brown Sugar":"Cassonade","Dark Soy Sauce":"Sauce soja foncée","Desiccated Coconut":"Noix de coco râpée","Digestive Biscuits":"Biscuits digestifs","Double Tomato Sauce Concentre":"Sauce tomate concentrée","Dried Basilic":"Basilic séché","Dried Chilli Flakes":"Flocons de piment","Dried Dill":"Aneth séché","Dried Fenugreek Leaves":"Fenugrec séché","Dried Ginger":"Gingembre séché","Dried Mint":"Menthe séchée","Dried Mixed Herbs":"Herbes de Provence","Dried Oregano1":"Origan séché","Dried Parsley":"Persil séché","Dried Thyme":"Thym séché","Duck Fat":"Graisse de canard","Egg Pasta":"Pâtes aux œufs","Farfalle":"Farfalle","Filo Pastry":"Pâte filo","Fish Stock":"Bouillon de poisson","Free Range Eggs":"Œufs","French Onion Soup":"Soupe à l'oignon","Ghee":"Ghee","Goat Cheese":"Fromage de chèvre","Golden Syrup":"Sirop de maïs","Green Chillies":"Piments verts","Green Olives":"Olives vertes","Green Onion":"Ciboule","Green Onions":"Ciboules","Green Pepper":"Poivron vert","Ground Cinnamon":"Cannelle moulue","Ground Ginger":"Gingembre moulu","Ground Pork":"Porc haché","Hot Chicken Stock":"Bouillon de poule chaud","Hungarian Paprika":"Paprika hongrois","Indian Spice":"Épices indiennes","Jasmine Rice":"Riz jasmin","Kaffir Lime Leaves":"Feuilles de combava","Kalamata Olives":"Olives kalamata","Kidney Beans":"Haricots rouges","King Prawns":"Crevettes","Kohlrabi":"Chou-rave","Lamb Shoulder":"Épaule d'agneau","Lard":"Saindoux","Lasagne Sheets":"Feuilles de lasagne","Light Soy Sauce":"Sauce soja claire","Lime Juice":"Jus de citron vert","Lime Zest":"Zeste de citron vert","Mace Blades":"Muscade","Macaroni":"Macaroni","Malted Milk":"Lait malté","Mandarin":"Mandarine","Maple Butter":"Beurre d'érable","Maris Piper Potatoes":"Pommes de terre","Marsala":"Marsala","Medjool Dates":"Dattes Medjool","Milk Chocolate":"Chocolat au lait","Mint Sauce":"Sauce à la menthe","Monkfish":"Lotte","Nori":"Algues nori","Nutmeg Ground":"Muscade moulue","Oil":"Huile","Onion Powder":"Oignon en poudre","Orange Zest":"Zeste d'orange","Palm Sugar":"Sucre de palme","Pancakes":"Crêpes","Pancetta":"Pancetta","Panko Breadcrumbs":"Chapelure panko","Paprika Mild":"Paprika doux","Parsley Fresh":"Persil frais","Pastry":"Pâte","Peanut Butter":"Beurre de cacahuète","Pepperoni":"Pepperoni","Pickled Walnuts":"Noix marinées","Pineapple":"Ananas","Pinto Beans":"Haricots pinto","Pitta Bread":"Pain pita","Plum Tomato":"Tomate","Polenta":"Polenta","Pomegranate":"Grenade","Poppy Seeds":"Graines de pavot","Pork Fillet":"Filet de porc","Pork Mince":"Porc haché","Pork Sausages":"Saucisses de porc","Pork Shoulder":"Épaule de porc","Portobellos":"Portobellos","Potato Starch":"Fécule de pomme de terre","Powdered Sugar":"Sucre glace","Prawn":"Crevette","Pretzels":"Bretzels","Puy Lentils":"Lentilles du Puy","Quinoa":"Quinoa","Radishes":"Radis","Raisin":"Raisin sec","Red Chilli":"Piment rouge","Red Pepper Flakes":"Flocons de piment","Red Wine Vinegar":"Vinaigre de vin rouge","Rice Noodles1":"Nouilles de riz","Ricotta Cheese":"Ricotta","Rolled Oats":"Flocons d'avoine","Roma Tomatoes":"Tomates Roma","Rose Wine":"Vin rosé","Rum":"Rhum","Saffron Threads":"Safran","Sage Leaves":"Feuilles de sauge","Salmon Fillet":"Filet de saumon","Salted Butter":"Beurre demi-sel","Sambal Oelek":"Sambal oelek","Sea Salt":"Sel de mer","Self-Raising Flour":"Farine à lever","Sesame Seed":"Graine de sésame","Shallot":"Échalote","Shaoxing Wine":"Vin de Shaoxing","Shellfish":"Fruits de mer","Smoked Paprika":"Paprika fumé","Smoked Salmon":"Saumon fumé","Snow Peas":"Pois gourmands","Soy Bean":"Soja","Spaghetti":"Spaghetti","Spinach Leaves":"Feuilles d'épinards","Spring Greens":"Choux de printemps","Squid":"Calamars","Steak":"Bifteck","Stilton":"Stilton","Stout":"Stout","Sugar Cane":"Canne à sucre","Summer Savory":"Sarriette","Sultanas":"Raisins de Smyrne","Sunflower Oil":"Huile de tournesol","Sweet Chilli Sauce":"Sauce chili sucrée","Sweetener":"Édulcorant","Tagine Spices":"Épices à tajine","Taleggio":"Taleggio","Tamarind Paste":"Pâte de tamarin","Tinned Tomatoes":"Tomates en boîte","Toasted Almonds":"Amandes grillées","Tomato Paste":"Coulis de tomate","Treacle":"Mélasse","Turmeric Root":"Racine de curcuma","Unsalted Butter":"Beurre doux","Vanilla Extract":"Extrait de vanille","Vanilla Ice Cream":"Glace à la vanille","Veal":"Veau","Vegetables":"Légumes","Vermouth":"Vermouth","Vinaigrette":"Vinaigrette","Wafer Ham":"Jambon en tranches","Walnut":"Noix","Walnuts":"Noix","Water Chestnuts":"Châtaignes d'eau","White Breadcrumbs":"Chapelure blanche","White Cabbage":"Chou blanc","White Pepper":"Poivre blanc","White Wine Vinegar":"Vinaigre de vin blanc","Whole Almonds":"Amandes entières","Whole Chicken":"Poulet entier","Wine":"Vin","Yeast Extract":"Extrait de levure","Yellow Onions":"Oignons jaunes","Yukon Gold Potatoes":"Pommes de terre Yukon"};
 const CATS_FR = {"Chicken":"Poulet","Beef":"Bœuf","Pork":"Porc","Fish":"Poisson","Seafood":"Fruits de mer","Vegetarian":"Végétarien","Vegan":"Vegan","Dessert":"Dessert","Starter":"Entrée","Breakfast":"Petit-déjeuner","Side":"Accompagnement","Miscellaneous":"Divers","Lamb":"Agneau","Goat":"Chèvre","Pasta":"Pâtes"};
 const AREAS_FR = {"American":"Américaine","British":"Britannique","Canadian":"Canadienne","Chinese":"Chinoise","Croatian":"Croate","Dutch":"Néerlandaise","Egyptian":"Égyptienne","French":"Française","Greek":"Grecque","Indian":"Indienne","Irish":"Irlandaise","Italian":"Italienne","Jamaican":"Jamaïcaine","Japanese":"Japonaise","Kenyan":"Kényane","Malaysian":"Malaisienne","Mexican":"Mexicaine","Moroccan":"Marocaine","Polish":"Polonaise","Portuguese":"Portugaise","Russian":"Russe","Spanish":"Espagnole","Thai":"Thaïlandaise","Tunisian":"Tunisienne","Turkish":"Turque","Vietnamese":"Vietnamienne"};
 function catFr(c) { return CATS_FR[c] || c; }
@@ -265,6 +285,113 @@ list.push(t);
 }
 return list;
 }
+
+const TYPE_LABELS = { Apero: "Apéro", Starter: "Entrée", Main: "Plat", Dessert: "Dessert" };
+const TYPE_TO_CATS = {
+Apero: ["Starter", "Side", "Miscellaneous"],
+Starter: ["Starter", "Side"],
+Main: ["Chicken", "Beef", "Pork", "Seafood", "Fish", "Lamb", "Goat", "Pasta", "Vegan", "Vegetarian", "Breakfast", "Miscellaneous"],
+Dessert: ["Dessert"]
+};
+const AREA_GROUPS = {
+"Europe du Sud": ["Italian", "Spanish", "French", "Greek", "Portuguese", "Croatian", "Malaysian"],
+"Europe du Nord": ["British", "Irish", "Dutch", "Polish", "Russian"],
+"Europe de l'Est": ["Polish", "Russian", "Croatian"],
+"Asie": ["Chinese", "Japanese", "Thai", "Vietnamese", "Indian", "Malaysian", "Turkish"],
+"Amérique du Nord": ["American", "Canadian", "Jamaican"],
+"Amérique du Sud": ["Mexican", "Brazilian", "Cuban", "Peruvian"],
+"Afrique / Moyen-Orient": ["Moroccan", "Tunisian", "Egyptian", "Kenyan", "Syrian"]
+};
+const AREA_GROUP_FR = {
+"Europe du Sud": "Europe du Sud", "Europe du Nord": "Europe du Nord", "Europe de l'Est": "Europe de l'Est",
+"Asie": "Asie", "Amérique du Nord": "Amérique du Nord", "Amérique du Sud": "Amérique du Sud",
+"Afrique / Moyen-Orient": "Afrique / Moyen-Orient"
+};
+let currentType = null;
+let currentArea = null;
+function chooseType(t) {
+currentType = t;
+currentArea = null;
+document.getElementById("step1").style.display = "none";
+document.getElementById("step2").style.display = "";
+document.getElementById("typeLabel").textContent = TYPE_LABELS[t];
+renderAreaChips();
+showSuggestions();
+}
+function backToStep1() {
+document.getElementById("step2").style.display = "none";
+document.getElementById("step1").style.display = "";
+document.getElementById("searchResults").innerHTML = "";
+document.getElementById("fSearch").value = "";
+hidePicked();
+}
+function hidePicked() {
+document.getElementById("manualFields").style.display = "none";
+document.getElementById("servingsField").style.display = "none";
+window._pickedMeal = null;
+}
+function renderAreaChips() {
+let h = `<button type="button" class="chip ${!currentArea ? "on" : ""}" onclick="setArea(null)">Toutes</button>`;
+for (const g of Object.keys(AREA_GROUPS)) {
+h += `<button type="button" class="chip ${currentArea === g ? "on" : ""}" onclick="setArea('${g}')">${g}</button>`;
+}
+document.getElementById("areaChips").innerHTML = h;
+}
+function setArea(g) {
+currentArea = g;
+renderAreaChips();
+showSuggestions();
+}
+function mealMatchesType(m) {
+if (!currentType) return true;
+return TYPE_TO_CATS[currentType].includes(m.strCategory);
+}
+function mealMatchesArea(m) {
+if (!currentArea) return true;
+return AREA_GROUPS[currentArea].includes(m.strArea);
+}
+async function showSuggestions() {
+const res = document.getElementById("searchResults");
+res.innerHTML = `<div class="loading">Suggestions...</div>`;
+try {
+const meals = [];
+const seen = new Set();
+let tries = 0;
+while (meals.length < 5 && tries < 25) {
+tries++;
+const r = await fetch("https://www.themealdb.com/api/json/v1/1/random.php");
+const data = await r.json();
+const m = data.meals && data.meals[0];
+if (m && !seen.has(m.idMeal) && mealMatchesType(m) && mealMatchesArea(m)) {
+seen.add(m.idMeal);
+meals.push(m);
+}
+}
+if (meals.length === 0) {
+res.innerHTML = `<div class="loading">Pas de recette trouvée pour ce filtre.</div>`;
+return;
+}
+if (!window._mealsCache) window._mealsCache = {};
+let html = `<div class="result-hint">Suggestions ${TYPE_LABELS[currentType] ? "« " + TYPE_LABELS[currentType] + " »" : ""}${currentArea ? " · " + currentArea : ""} :</div>`;
+meals.forEach(m => {
+window._mealsCache[m.idMeal] = m;
+html += resultCardHtml(m);
+});
+res.innerHTML = html;
+} catch (e) {
+res.innerHTML = `<div class="loading">Erreur réseau.</div>`;
+}
+}
+function resultCardHtml(m) {
+return `<div class="result-card" data-id="${m.idMeal}" onclick="pickMeal('${m.idMeal}')">
+<img src="${m.strMealThumb}" alt="" loading="lazy">
+<div style="flex:1">
+<div class="result-name">${escapeHtml(mealNameFr(m))}</div>
+<div class="result-meta">${escapeHtml(catFr(m.strCategory || ""))}${m.strArea ? " · " + escapeHtml(areaFr(m.strArea)) : ""}</div>
+</div>
+</div>`;
+}
+
 let searchTimer = null;
 function onSearchInput() {
 const q = document.getElementById("fSearch").value.trim();
@@ -288,16 +415,12 @@ return;
 }
 window._mealsCache = {};
 let html = "";
-data.meals.slice(0, 8).forEach(m => {
+const filtered = data.meals.filter(m => mealMatchesType(m) && mealMatchesArea(m)).slice(0, 8);
+filtered.forEach(m => {
 window._mealsCache[m.idMeal] = m;
-html += `<div class="result-card" data-id="${m.idMeal}" onclick="pickMeal('${m.idMeal}')">
-<img src="${m.strMealThumb}" alt="">
-<div style="flex:1">
-<div class="result-name">${escapeHtml(m.strMeal)}</div>
-<div class="result-meta">${escapeHtml(catFr(m.strCategory || ""))}${m.strArea ? " · " + escapeHtml(areaFr(m.strArea)) : ""}</div>
-</div>
-</div>`;
+html += resultCardHtml(m);
 });
+if (filtered.length === 0) html = `<div class="loading">Rien trouvé pour ce filtre.</div>`;
 res.innerHTML = html;
 } catch (e) {
 res.innerHTML = `<div class="loading">Erreur réseau.</div>`;
@@ -361,6 +484,10 @@ res.innerHTML = `<div class="loading">Erreur réseau.</div>`;
 }
 function openModal() {
 editId = null;
+currentType = null;
+currentArea = null;
+document.getElementById("step1").style.display = "";
+document.getElementById("step2").style.display = "none";
 window._pickedMeal = null;
 document.getElementById("manualFields").style.display = "none";
 document.getElementById("servingsField").style.display = "none";
