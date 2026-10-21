@@ -13,7 +13,10 @@
 .back-btn{border:none;background:none;color:var(--muted);font-size:13px;padding:6px 0;cursor:pointer;width:100%}
 .chip-row{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;padding:2px 0 6px;-webkit-overflow-scrolling:touch}
 .chip{border:1px solid var(--border);border-radius:16px;padding:6px 12px;font-size:12px;background:var(--card);white-space:nowrap;cursor:pointer;flex-shrink:0}
-.chip.on{background:var(--primary);color:#fff;border-color:var(--primary)}.result-hint{font-size:12px;color:var(--muted);margin:4px 2px}.loading{text-align:center;color:var(--muted);padding:14px;font-size:14px}</style>
+.chip.on{background:var(--primary);color:#fff;border-color:var(--primary)}.area-choice{display:flex;align-items:center;gap:10px;width:100%;padding:13px 14px;border:1px solid var(--border);border-radius:14px;background:var(--card);font-size:15px;font-weight:600;color:var(--text);cursor:pointer;margin-bottom:8px}
+.area-choice:active{background:#fff4f0;border-color:var(--primary)}
+.area-choice .ar-emoji{font-size:22px}
+.area-choice .ar-sub{font-size:11px;color:var(--muted);font-weight:400}.result-hint{font-size:12px;color:var(--muted);margin:4px 2px}.loading{text-align:center;color:var(--muted);padding:14px;font-size:14px}</style>
 </head>
 <body>
 <header>
@@ -50,7 +53,11 @@
 </div>
 </div>
 <div id="step2" style="display:none">
-<div id="areaChips" class="chip-row"></div>
+<div class="section-title" style="margin-top:0">Quelle cuisine ?</div>
+<div id="areaChoices"></div>
+<button type="button" class="back-btn" onclick="backToType()">← Changer de type</button>
+</div>
+<div id="step3" style="display:none">
 <div class="field" style="margin-bottom:6px">
 <label>Chercher une recette</label>
 <input id="fSearch" placeholder="carbonara, chicken..." autocomplete="off" oninput="onSearchInput()">
@@ -67,7 +74,7 @@
 <div class="hint">Ex : 200 g de farine, 2 œufs</div>
 </div>
 </div>
-<button type="button" class="back-btn" onclick="backToStep1()">← Changer de type</button>
+<button type="button" class="back-btn" onclick="backToStep2()">← Changer de cuisine</button>
 </div>
 <div class="field" id="servingsField" style="display:none">
 <label>Pour combien de personnes ?</label>
@@ -309,18 +316,47 @@ const AREA_GROUP_FR = {
 };
 let currentType = null;
 let currentArea = null;
+const AREA_META = {
+"Toutes": { emoji: "🌍", sub: "Toutes les cuisines" },
+"Europe du Sud": { emoji: "🫒", sub: "Italienne, française, espagnole, grecque..." },
+"Europe du Nord": { emoji: "🥔", sub: "Britannique, irlandaise, néerlandaise" },
+"Europe de l'Est": { emoji: "🥟", sub: "Polonaise, russe, croate" },
+"Asie": { emoji: "🍜", sub: "Chinoise, japonaise, thaï, indienne..." },
+"Amérique du Nord": { emoji: "🍔", sub: "Américaine, canadienne" },
+"Amérique du Sud": { emoji: "🌮", sub: "Mexicaine, brésilienne, péruvienne" },
+"Afrique / Moyen-Orient": { emoji: "🍢", sub: "Marocaine, tunisienne, égyptienne" }
+};
 function chooseType(t) {
 currentType = t;
-currentArea = null;
 document.getElementById("step1").style.display = "none";
 document.getElementById("step2").style.display = "";
-document.getElementById("typeLabel").textContent = TYPE_LABELS[t];
-renderAreaChips();
+renderAreaChoices();
+}
+function renderAreaChoices() {
+let h = "";
+for (const g of Object.keys(AREA_META)) {
+const meta = AREA_META[g];
+h += `<button type="button" class="area-choice" onclick="chooseArea('${g === "Toutes" ? "" : g}')">
+<span class="ar-emoji">${meta.emoji}</span>
+<span><span>${g}</span><div class="ar-sub">${meta.sub}</div></span>
+</button>`;
+}
+document.getElementById("areaChoices").innerHTML = h;
+}
+function chooseArea(g) {
+currentArea = g || null;
+document.getElementById("step2").style.display = "none";
+document.getElementById("step3").style.display = "";
+document.getElementById("typeLabel").textContent = TYPE_LABELS[currentType] + (currentArea ? " · " + currentArea : "");
 showSuggestions();
 }
-function backToStep1() {
+function backToType() {
 document.getElementById("step2").style.display = "none";
 document.getElementById("step1").style.display = "";
+}
+function backToStep2() {
+document.getElementById("step3").style.display = "none";
+document.getElementById("step2").style.display = "";
 document.getElementById("searchResults").innerHTML = "";
 document.getElementById("fSearch").value = "";
 hidePicked();
@@ -329,18 +365,6 @@ function hidePicked() {
 document.getElementById("manualFields").style.display = "none";
 document.getElementById("servingsField").style.display = "none";
 window._pickedMeal = null;
-}
-function renderAreaChips() {
-let h = `<button type="button" class="chip ${!currentArea ? "on" : ""}" onclick="setArea(null)">Toutes</button>`;
-for (const g of Object.keys(AREA_GROUPS)) {
-h += `<button type="button" class="chip ${currentArea === g ? "on" : ""}" onclick="setArea('${g}')">${g}</button>`;
-}
-document.getElementById("areaChips").innerHTML = h;
-}
-function setArea(g) {
-currentArea = g;
-renderAreaChips();
-showSuggestions();
 }
 function mealMatchesType(m) {
 if (!currentType) return true;
@@ -488,6 +512,7 @@ currentType = null;
 currentArea = null;
 document.getElementById("step1").style.display = "";
 document.getElementById("step2").style.display = "none";
+document.getElementById("step3").style.display = "none";
 window._pickedMeal = null;
 document.getElementById("manualFields").style.display = "none";
 document.getElementById("servingsField").style.display = "none";
