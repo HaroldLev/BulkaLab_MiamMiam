@@ -6,7 +6,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Mes Recettes</title>
-<style>:root{--bg:#f7f5f2;--card:#ffffff;--primary:#ff6b4a;--primary-dark:#e5532f;--text:#2b2b2b;--muted:#8a8a8a;--border:#eae6e1;--green:#2e9e5b}*{box-sizing:border-box;margin:0;padding:0;}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);padding-bottom:100px;padding-bottom:calc(100px + env(safe-area-inset-bottom))}header{position:sticky;top:0;z-index:10;background:var(--primary);color:white;padding:16px 16px 12px;padding-top:calc(16px + env(safe-area-inset-top))}header h1{font-size:22px;font-weight:700}.tabs{display:flex;gap:8px;margin-top:12px}.tab{flex:1;border:none;background:rgba(255,255,255,.2);color:white;padding:10px;border-radius:12px;font-size:15px;font-weight:600}.tab.active{background:white;color:var(--primary-dark)}main{padding:16px;max-width:640px;margin:0 auto}.section-title{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:8px 2px 10px;font-weight:700}.recipe-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer;}.recipe-card.selected{border-color:var(--primary);background:#fff4f0}.recipe-emoji{font-size:34px}.recipe-info{flex:1}.recipe-name{font-weight:700;font-size:16px}.recipe-meta{font-size:13px;color:var(--muted);margin-top:3px}.check{width:26px;height:26px;border-radius:50%;border:2px solid #ccc;flex-shrink:0;display:flex;align-items:center;justify-content:center}.recipe-card.selected .check{background:var(--primary);border-color:var(--primary);color:white}.ing-row{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px}.ing-row input[type=checkbox]{width:20px;height:20px;accent-color:var(--green);flex-shrink:0}.ing-name{font-size:15px}.ing-qty{font-size:13px;color:var(--muted)}.ing-row.checked .ing-name{text-decoration:line-through;color:var(--muted)}.empty{text-align:center;color:var(--muted);padding:40px 20px;font-size:15px}footer{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);padding:12px 16px calc(12px + env(safe-area-inset-bottom));display:flex;gap:10px}.btn{flex:1;border:none;border-radius:14px;padding:14px;font-size:16px;font-weight:700;cursor:pointer}.btn-primary{background:var(--primary);color:white}.btn-primary:disabled{background:#ddd;color:#999}.btn-secondary{background:#f0ece8;color:var(--text)}.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:50;display:none;align-items:flex-end;justify-content:center}.modal-bg.open{display:flex}.modal{background:var(--card);width:100%;max-width:640px;border-radius:20px 20px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom));max-height:85vh;overflow-y:auto}.modal h2{font-size:18px;margin-bottom:14px}.field{margin-bottom:12px}.field label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:5px}.field input,.field textarea{width:100%;border:1px solid var(--border);border-radius:10px;padding:11px 12px;font-size:16px;font-family:inherit;background:var(--bg)}.field textarea{height:90px;resize:vertical}.hint{font-size:12px;color:var(--muted);margin-top:4px}.modal-actions{display:flex;gap:10px;margin-top:16px}.hidden{display:none}.delete-recipe{border:none;background:none;color:#d33;font-size:20px;padding:4px 8px;cursor:pointer}.search-results{margin-top:6px}.result-card{display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:8px;margin-bottom:8px;cursor:pointer}.result-card img{width:52px;height:52px;border-radius:10px;object-fit:cover}.result-name{font-weight:600;font-size:15px}.result-meta{font-size:12px;color:var(--muted)}.servings{display:flex;align-items:center;gap:6px;font-size:12px}.servings button{width:24px;height:24px;border-radius:50%;border:1px solid var(--border);background:#fff;font-size:15px;line-height:1;cursor:pointer;padding:0}.servings span{color:var(--muted);white-space:nowrap}.type-choice{display:flex;flex-direction:column;align-items:center;gap:6px;width:100%;padding:14px 8px;border:1px solid var(--border);border-radius:14px;background:var(--card);font-size:15px;font-weight:600;color:var(--text);cursor:pointer;margin-bottom:8px}
+<style>:root{--bg:#f7f5f2;--card:#ffffff;--primary:#ff6b4a;--primary-dark:#e5532f;--text:#2b2b2b;--muted:#8a8a8a;--border:#eae6e1;--green:#2e9e5b}*{box-sizing:border-box;margin:0;padding:0;}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);padding-bottom:100px;padding-bottom:calc(100px + env(safe-area-inset-bottom))}header{position:sticky;top:0;z-index:10;background:var(--primary);color:white;padding:16px 16px 12px;padding-top:calc(16px + env(safe-area-inset-top))}header h1{font-size:22px;font-weight:700}.tabs{display:flex;gap:8px;margin-top:12px}.tab{flex:1;border:none;background:rgba(255,255,255,.2);color:white;padding:10px;border-radius:12px;font-size:15px;font-weight:600}.tab.active{background:white;color:var(--primary-dark)}main{padding:16px;max-width:640px;margin:0 auto}.section-title{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:8px 2px 10px;font-weight:700}.recipe-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer;}.recipe-card.selected{border-color:var(--primary);background:#fff4f0}.recipe-emoji{font-size:34px}.recipe-info{flex:1}.recipe-name{font-weight:700;font-size:16px}.recipe-meta{font-size:13px;color:var(--muted);margin-top:3px}.check{width:26px;height:26px;border-radius:50%;border:2px solid #ccc;flex-shrink:0;display:flex;align-items:center;justify-content:center}.recipe-card.selected .check{background:var(--primary);border-color:var(--primary);color:white}.ing-row{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px}.ing-row input[type=checkbox]{width:20px;height:20px;accent-color:var(--green);flex-shrink:0}.ing-name{font-size:15px}.ing-qty{font-size:13px;color:var(--muted)}.ing-row.checked .ing-name{text-decoration:line-through;color:var(--muted)}.empty{text-align:center;color:var(--muted);padding:40px 20px;font-size:15px}footer{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);padding:12px 16px calc(12px + env(safe-area-inset-bottom));display:flex;gap:10px}.btn{flex:1;border:none;border-radius:14px;padding:14px;font-size:16px;font-weight:700;cursor:pointer}.btn-primary{background:var(--primary);color:white}.btn-primary:disabled{background:#ddd;color:#999}.btn-secondary{background:#f0ece8;color:var(--text)}.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:50;display:none;align-items:flex-end;justify-content:center}.modal-bg.open{display:flex}.modal{background:var(--card);width:100%;max-width:640px;border-radius:20px 20px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom));max-height:85vh;overflow-y:auto}.modal h2{font-size:18px;margin-bottom:14px}.field{margin-bottom:12px}.field label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:5px}.field input,.field textarea{width:100%;border:1px solid var(--border);border-radius:10px;padding:11px 12px;font-size:16px;font-family:inherit;background:var(--bg)}.field textarea{height:90px;resize:vertical}.hint{font-size:12px;color:var(--muted);margin-top:4px}.modal-actions{display:flex;gap:10px;margin-top:16px}.hidden{display:none}.servings-badge{border:1px solid var(--border);border-radius:10px;padding:4px 8px;font-size:11px;font-weight:700;background:#fff;cursor:pointer;white-space:nowrap}
+.delete-recipe{border:none;background:none;color:#d33;font-size:20px;padding:4px 8px;cursor:pointer}.search-results{margin-top:6px}.result-card{display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:8px;margin-bottom:8px;cursor:pointer}.result-card img{width:52px;height:52px;border-radius:10px;object-fit:cover}.result-name{font-weight:600;font-size:15px}.result-meta{font-size:12px;color:var(--muted)}.big-step{width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:#fff;font-size:22px;font-weight:700;cursor:pointer}
+.servings{display:flex;align-items:center;gap:6px;font-size:12px}.servings button{width:24px;height:24px;border-radius:50%;border:1px solid var(--border);background:#fff;font-size:15px;line-height:1;cursor:pointer;padding:0}.servings span{color:var(--muted);white-space:nowrap}.type-choice{display:flex;flex-direction:column;align-items:center;gap:6px;width:100%;padding:14px 8px;border:1px solid var(--border);border-radius:14px;background:var(--card);font-size:15px;font-weight:600;color:var(--text);cursor:pointer;margin-bottom:8px}
 .type-choice:active{background:#fff4f0;border-color:var(--primary)}
 .tc-emoji{font-size:30px}
 #typeChoices{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -19,6 +21,7 @@
 .area-choice .ar-sub{font-size:11px;color:var(--muted);font-weight:400}.store-choice{display:flex;align-items:center;gap:10px;width:100%;padding:13px 14px;border:1px solid var(--border);border-radius:14px;background:var(--card);font-size:15px;font-weight:600;color:var(--text);cursor:pointer;margin-bottom:8px;text-align:left}
 .store-choice:active{background:#fff4f0;border-color:var(--primary)}
 .store-choice .st-emoji{font-size:22px}
+.store-choice .st-price{font-weight:800;font-size:15px;color:var(--primary-dark);white-space:nowrap}
 .store-choice .st-sub{font-size:11px;color:var(--muted);font-weight:400}
 .price-total{background:#fff4f0;border:1px solid var(--primary);border-radius:14px;padding:14px;margin:10px 0;text-align:center}
 .price-total .pt-amount{font-size:28px;font-weight:800;color:var(--primary-dark)}
@@ -45,6 +48,23 @@
 <button class="btn btn-secondary" style="width:100%; margin-top:10px;" onclick="clearChecked()">Décocher tout</button>
 <button class="btn btn-primary" style="width:100%; margin-top:10px;" onclick="openPriceModal()">💰 Estimer le prix du panier</button>
 </main>
+<div class="modal-bg" id="servingsModalBg" onclick="if(event.target===this)closeServingsEditor()">
+<div class="modal" style="max-width:400px">
+<h2 id="servingsEditorTitle">Pour combien de personnes ?</h2>
+<div class="field">
+<div class="servings" style="justify-content:center;gap:14px">
+<button type="button" class="big-step" onclick="stepServings(-1)">−</button>
+<span id="editorServingsVal" style="font-size:24px;font-weight:800">4</span>
+<button type="button" class="big-step" onclick="stepServings(1)">+</button>
+</div>
+<div class="hint" style="text-align:center">personne(s)</div>
+</div>
+<div class="modal-actions">
+<button class="btn btn-secondary" onclick="closeServingsEditor()">Annuler</button>
+<button class="btn btn-primary" onclick="applyServings()">Valider</button>
+</div>
+</div>
+</div>
 <div class="modal-bg" id="priceModalBg" onclick="if(event.target===this)closePriceModal()">
 <div class="modal">
 <h2>💰 Estimation du panier</h2>
@@ -122,7 +142,7 @@ return fallback;
 function validRecipes(v) {
 if (!Array.isArray(v)) return DEFAULT_RECIPES.slice();
 return v.filter(r => r && typeof r.id === "string" && typeof r.name === "string" && Array.isArray(r.ingredients))
-.map(r => ({ id: String(r.id).slice(0, 64), name: String(r.name).slice(0, 120), emoji: typeof r.emoji === "string" ? r.emoji.slice(0, 8) : "", ingredients: r.ingredients.map(i => String(i).slice(0, 120)) }));
+.map(r => ({ id: String(r.id).slice(0, 64), name: String(r.name).slice(0, 120), emoji: typeof r.emoji === "string" ? r.emoji.slice(0, 8) : "", ingredients: r.ingredients.map(i => String(i).slice(0, 120)), servings: typeof r.servings === "number" ? Math.max(1, Math.min(12, r.servings)) : 4, type: typeof r.type === "string" ? r.type.slice(0, 16) : null }));
 }
 function validStrArray(v) {
 return Array.isArray(v) ? v.filter(x => typeof x === "string").map(x => x.slice(0, 256)) : [];
@@ -171,9 +191,10 @@ return `<div class="recipe-card ${sel ? "selected" : ""}" onclick="toggleRecipe(
 <div class="recipe-emoji">${escapeHtml(r.emoji || "")}</div>
 <div class="recipe-info">
 <div class="recipe-name">${escapeHtml(r.name)}</div>
-<div class="recipe-meta">${r.ingredients.length} ingrédients</div>
+<div class="recipe-meta">${r.ingredients.length} ingrédients${r.type ? " · " + escapeHtml(TYPE_LABELS[r.type] || r.type) : ""}</div>
 </div>
 <div style="display:flex;align-items:center;gap:6px">
+<button class="servings-badge" onclick="event.stopPropagation();openServingsEditor('${safeId(r.id)}')">👥 ${r.servings || 4}p</button>
 <button class="delete-recipe" onclick="event.stopPropagation();deleteRecipe('${safeId(r.id)}')">🗑️</button>
 <div class="check">${sel ? "✓" : ""}</div>
 </div>
@@ -571,7 +592,7 @@ if (!name || ingredients.length === 0) {
 alert("Nom + ingrédients requis.");
 return;
 }
-recipes.push({ id: "r" + Date.now(), name, emoji, ingredients });
+recipes.push({ id: "r" + Date.now(), name, emoji, ingredients, servings: currentServings, type: currentType });
 save();
 closeModal();
 renderRecipes();
@@ -595,6 +616,7 @@ const STORES = [
 { id: "lidl", name: "Lidl / Aldi", emoji: "🛒", sub: "Discount — les moins chers", factor: 0.80 },
 { id: "leclerc", name: "Leclerc", emoji: "🦁", sub: "Grandes surfaces — bon rapport", factor: 0.92 },
 { id: "intermarche", name: "Intermarché", emoji: "⚔️", sub: "Grandes surfaces", factor: 0.95 },
+{ id: "superu", name: "Super U / U Express", emoji: "🟡", sub: "Coopérative U — grand choix local", factor: 0.96 },
 { id: "carrefour", name: "Carrefour", emoji: "🔵", sub: "Grandes surfaces", factor: 0.98 },
 { id: "casino", name: "Casino / Géant", emoji: "🟢", sub: "Grandes surfaces", factor: 1.02 },
 { id: "monoprix", name: "Monoprix", emoji: "🔴", sub: "City — plus cher", factor: 1.25 },
@@ -656,16 +678,60 @@ rows.push({ name: it.name, price, known });
 }
 return { rows, total, knownCount, totalCount: items.length };
 }
+
+// ============ SERVINGS PAR RECETTE ============
+let editingRecipeId = null;
+let editorServings = 4;
+function openServingsEditor(id) {
+const r = recipes.find(x => x.id === id);
+if (!r) return;
+editingRecipeId = id;
+editorServings = r.servings || 4;
+document.getElementById("editorServingsVal").textContent = editorServings;
+document.getElementById("servingsEditorTitle").textContent = r.name + " — pour combien ?";
+document.getElementById("servingsModalBg").classList.add("open");
+}
+function closeServingsEditor() {
+document.getElementById("servingsModalBg").classList.remove("open");
+editingRecipeId = null;
+}
+function stepServings(d) {
+editorServings = Math.max(1, Math.min(12, editorServings + d));
+document.getElementById("editorServingsVal").textContent = editorServings;
+}
+function applyServings() {
+const r = recipes.find(x => x.id === editingRecipeId);
+if (!r) { closeServingsEditor(); return; }
+const base = r.servings || 4;
+if (editorServings !== base) {
+r.ingredients = r.ingredients.map(line => scaleIngredientLine(line, editorServings / base));
+r.servings = editorServings;
+save();
+}
+renderRecipes();
+closeServingsEditor();
+}
+function scaleIngredientLine(line, factor) {
+const m = line.match(/^(\d+(?:[.,]\d+)?)\s*(g|gr|kg|ml|cl|dl|l)?\b/i);
+if (!m) return line;
+const val = parseFloat(m[1].replace(",", ".")) * factor;
+const scaled = roundQty(val) + (m[2] ? " " + m[2] : "");
+return scaled + line.slice(m[0].length);
+}
+
 function openPriceModal() {
 const items = buildAggregated();
 if (items.length === 0) { alert("Coche des recettes d'abord !"); return; }
 document.getElementById("priceStoreChoice").style.display = "";
 document.getElementById("priceResult").style.display = "none";
 let h = "";
-for (const s of STORES) {
+const estimates = STORES.map(s => ({ s, est: computeBasketEstimate(s.factor) }));
+estimates.sort((a, b) => a.est.total - b.est.total);
+for (const { s, est } of estimates) {
 h += `<button type="button" class="store-choice" onclick="chooseStore('${s.id}')">
 <span class="st-emoji">${s.emoji}</span>
-<span><span>${s.name}</span><div class="st-sub">${s.sub}</div></span>
+<span style="flex:1"><span>${s.name}</span><div class="st-sub">${s.sub}</div></span>
+<span class="st-price">≈ ${est.total.toFixed(2)} €</span>
 </button>`;
 }
 document.getElementById("storeChoices").innerHTML = h;
