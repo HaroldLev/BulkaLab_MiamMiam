@@ -92,9 +92,25 @@
 </div>
 </div>
 <script>const DEFAULT_RECIPES = [];
-let recipes = JSON.parse(localStorage.getItem("recipes") || "null") || DEFAULT_RECIPES.slice();
-let selection = JSON.parse(localStorage.getItem("selection") || "[]");
-let checkedItems = JSON.parse(localStorage.getItem("checkedItems") || "[]");
+function loadJson(key, fallback) {
+try {
+const v = JSON.parse(localStorage.getItem(key) || "null");
+return v === null ? fallback : v;
+} catch (e) {
+return fallback;
+}
+}
+function validRecipes(v) {
+if (!Array.isArray(v)) return DEFAULT_RECIPES.slice();
+return v.filter(r => r && typeof r.id === "string" && typeof r.name === "string" && Array.isArray(r.ingredients))
+.map(r => ({ id: String(r.id).slice(0, 64), name: String(r.name).slice(0, 120), emoji: typeof r.emoji === "string" ? r.emoji.slice(0, 8) : "", ingredients: r.ingredients.map(i => String(i).slice(0, 120)) }));
+}
+function validStrArray(v) {
+return Array.isArray(v) ? v.filter(x => typeof x === "string").map(x => x.slice(0, 256)) : [];
+}
+let recipes = validRecipes(loadJson("recipes", null));
+let selection = validStrArray(loadJson("selection", []));
+let checkedItems = validStrArray(loadJson("checkedItems", []));
 let editId = null;
 let baseServings = 4;
 let currentServings = 2;
@@ -132,14 +148,14 @@ function renderRecipes() {
 const el = document.getElementById("recipeList");
 el.innerHTML = recipes.map(r => {
 const sel = selection.includes(r.id);
-return `<div class="recipe-card ${sel ? "selected" : ""}" onclick="toggleRecipe('${r.id}')">
-<div class="recipe-emoji">${r.emoji || ""}</div>
+return `<div class="recipe-card ${sel ? "selected" : ""}" onclick="toggleRecipe('${safeId(r.id)}')">
+<div class="recipe-emoji">${escapeHtml(r.emoji || "")}</div>
 <div class="recipe-info">
 <div class="recipe-name">${escapeHtml(r.name)}</div>
 <div class="recipe-meta">${r.ingredients.length} ingrédients</div>
 </div>
 <div style="display:flex;align-items:center;gap:6px">
-<button class="delete-recipe" onclick="event.stopPropagation();deleteRecipe('${r.id}')">🗑️</button>
+<button class="delete-recipe" onclick="event.stopPropagation();deleteRecipe('${safeId(r.id)}')">🗑️</button>
 <div class="check">${sel ? "✓" : ""}</div>
 </div>
 </div>`;
@@ -210,11 +226,11 @@ const el = document.getElementById("ingredientList");
 const items = buildAggregated();
 el.innerHTML = items.length === 0
 ? `<div class="empty">Coche des recettes pour générer ta liste.</div>`
-: items.map(it => {
+: items.map((it, idx) => {
 const de = /^(de |du |d')/i.test(it.name) ? " " : " de ";
 const label = it.qty != null ? `${formatQty(it.qty, it.unit)}${de}${it.name}` : it.name;
 const detail = it.units.length && it.qty != null ? it.units.join(" ; ") : "";
-const key = "ing:" + normalizeName(it.name);
+const key = "ing:" + idx;
 const ck = checkedItems.includes(key);
 return `<div class="ing-row ${ck ? "checked" : ""}" onclick="toggleCheck('${escapeAttr(key)}')">
 <input type="checkbox" ${ck ? "checked" : ""} onclick="event.stopPropagation();toggleCheck('${escapeAttr(key)}')">
@@ -398,7 +414,7 @@ return;
 if (!window._mealsCache) window._mealsCache = {};
 let html = `<div class="result-hint">Suggestions ${TYPE_LABELS[currentType] ? "« " + TYPE_LABELS[currentType] + " »" : ""}${currentArea ? " · " + currentArea : ""} :</div>`;
 meals.forEach(m => {
-window._mealsCache[m.idMeal] = m;
+window._mealsCache[safeId(m.idMeal)] = m;
 html += resultCardHtml(m);
 });
 res.innerHTML = html;
@@ -407,8 +423,8 @@ res.innerHTML = `<div class="loading">Erreur réseau.</div>`;
 }
 }
 function resultCardHtml(m) {
-return `<div class="result-card" data-id="${m.idMeal}" onclick="pickMeal('${m.idMeal}')">
-<img src="${m.strMealThumb}" alt="" loading="lazy">
+return `<div class="result-card" data-id="${safeId(m.idMeal)}" onclick="pickMeal('${safeId(m.idMeal)}')">
+<img src="${safeImgUrl(m.strMealThumb)}" alt="" loading="lazy">
 <div style="flex:1">
 <div class="result-name">${escapeHtml(mealNameFr(m))}</div>
 <div class="result-meta">${escapeHtml(catFr(m.strCategory || ""))}${m.strArea ? " · " + escapeHtml(areaFr(m.strArea)) : ""}</div>
@@ -441,7 +457,7 @@ window._mealsCache = {};
 let html = "";
 const filtered = data.meals.filter(m => mealMatchesType(m) && mealMatchesArea(m)).slice(0, 8);
 filtered.forEach(m => {
-window._mealsCache[m.idMeal] = m;
+window._mealsCache[safeId(m.idMeal)] = m;
 html += resultCardHtml(m);
 });
 if (filtered.length === 0) html = `<div class="loading">Rien trouvé pour ce filtre.</div>`;
@@ -492,9 +508,9 @@ if (out.length === 0) throw new Error("no suggestions");
 if (!window._mealsCache) window._mealsCache = {};
 let html = `<div class="result-hint">Suggestions du moment :</div>`;
 out.forEach(m => {
-window._mealsCache[m.idMeal] = m;
-html += `<div class="result-card" data-id="${m.idMeal}" onclick="pickMeal('${m.idMeal}')">
-<img src="${m.strMealThumb}" alt="">
+window._mealsCache[safeId(m.idMeal)] = m;
+html += `<div class="result-card" data-id="${safeId(m.idMeal)}" onclick="pickMeal('${safeId(m.idMeal)}')">
+<img src="${safeImgUrl(m.strMealThumb)}" alt="">
 <div style="flex:1">
 <div class="result-name">${escapeHtml(m.strMeal)}</div>
 <div class="result-meta">${escapeHtml(catFr(m.strCategory || ""))}${m.strArea ? " · " + escapeHtml(areaFr(m.strArea)) : ""}</div>
@@ -544,8 +560,15 @@ renderRecipes();
 function escapeHtml(s) {
 return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
+function safeImgUrl(u) {
+const s = String(u || "");
+return /^https:\/\/[^\s"<>]+$/.test(s) ? s : "";
+}
+function safeId(s) {
+return String(s).replace(/[^a-zA-Z0-9_-]/g, "");
+}
 function escapeAttr(s) {
-return s.replace(/'/g, "\\'");
+return String(s).replace(/&/g, "&amp;").replace(/'/g, "&#39;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\$/g, "&#36;");
 }
 renderRecipes();</script>
 </body>
