@@ -669,14 +669,16 @@ const items = buildAggregated();
 const rows = [];
 let total = 0;
 let knownCount = 0;
-for (const it of items) {
+let skipped = 0;
+items.forEach((it, idx) => {
+if (checkedItems.includes("ing:" + idx)) { skipped++; return; }
 const { known } = lookupPrice(it.name);
 if (known) knownCount++;
 const price = estimateItemPrice(it, storeFactor);
 total += price;
 rows.push({ name: it.name, price, known });
-}
-return { rows, total, knownCount, totalCount: items.length };
+});
+return { rows, total, knownCount, totalCount: rows.length, skipped };
 }
 
 // ============ SERVINGS PAR RECETTE ============
@@ -752,7 +754,7 @@ h += `<div class="price-row"><span class="pr-name">${escapeHtml(r.name)}${r.know
 }
 const lo = est.total * 0.85, hi = est.total * 1.15;
 h += `<div class="price-total">
-<div style="font-size:12px;color:var(--muted)">Total estimé (${est.knownCount}/${est.totalCount} produits à prix connu)</div>
+<div style="font-size:12px;color:var(--muted)">Total estimé (${est.knownCount}/${est.totalCount} produits à prix connu)${est.skipped ? " · " + est.skipped + " déjà acheté(s) exclu(s)" : ""}</div>
 <div class="pt-amount">${est.total.toFixed(2)} €</div>
 <div style="font-size:11px;color:var(--muted)">Fourchette : ${lo.toFixed(2)} – ${hi.toFixed(2)} €</div>
 </div>`;
