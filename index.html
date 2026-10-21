@@ -16,7 +16,15 @@
 .chip.on{background:var(--primary);color:#fff;border-color:var(--primary)}.area-choice{display:flex;align-items:center;gap:10px;width:100%;padding:13px 14px;border:1px solid var(--border);border-radius:14px;background:var(--card);font-size:15px;font-weight:600;color:var(--text);cursor:pointer;margin-bottom:8px}
 .area-choice:active{background:#fff4f0;border-color:var(--primary)}
 .area-choice .ar-emoji{font-size:22px}
-.area-choice .ar-sub{font-size:11px;color:var(--muted);font-weight:400}.result-hint{font-size:12px;color:var(--muted);margin:4px 2px}.loading{text-align:center;color:var(--muted);padding:14px;font-size:14px}</style>
+.area-choice .ar-sub{font-size:11px;color:var(--muted);font-weight:400}.store-choice{display:flex;align-items:center;gap:10px;width:100%;padding:13px 14px;border:1px solid var(--border);border-radius:14px;background:var(--card);font-size:15px;font-weight:600;color:var(--text);cursor:pointer;margin-bottom:8px;text-align:left}
+.store-choice:active{background:#fff4f0;border-color:var(--primary)}
+.store-choice .st-emoji{font-size:22px}
+.store-choice .st-sub{font-size:11px;color:var(--muted);font-weight:400}
+.price-total{background:#fff4f0;border:1px solid var(--primary);border-radius:14px;padding:14px;margin:10px 0;text-align:center}
+.price-total .pt-amount{font-size:28px;font-weight:800;color:var(--primary-dark)}
+.price-row{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);padding:3px 2px}
+.price-row .pr-name{flex:1}
+.price-row .pr-val{font-weight:600;color:var(--text)}.result-hint{font-size:12px;color:var(--muted);margin:4px 2px}.loading{text-align:center;color:var(--muted);padding:14px;font-size:14px}</style>
 </head>
 <body>
 <header>
@@ -35,7 +43,18 @@
 <div class="section-title">À acheter</div>
 <div id="ingredientList"></div>
 <button class="btn btn-secondary" style="width:100%; margin-top:10px;" onclick="clearChecked()">Décocher tout</button>
+<button class="btn btn-primary" style="width:100%; margin-top:10px;" onclick="openPriceModal()">💰 Estimer le prix du panier</button>
 </main>
+<div class="modal-bg" id="priceModalBg" onclick="if(event.target===this)closePriceModal()">
+<div class="modal">
+<h2>💰 Estimation du panier</h2>
+<div id="priceStoreChoice">
+<div class="section-title" style="margin-top:0">Où fais-tu tes courses ?</div>
+<div id="storeChoices"></div>
+</div>
+<div id="priceResult" style="display:none"></div>
+</div>
+</div>
 <footer>
 <button class="btn btn-secondary" id="btnClear" onclick="clearSelection()">Tout retirer</button>
 <button class="btn btn-primary" id="btnGenerate" onclick="showTab('list')" disabled>🛒 Voir ma liste</button>
@@ -570,6 +589,115 @@ return String(s).replace(/[^a-zA-Z0-9_-]/g, "");
 function escapeAttr(s) {
 return String(s).replace(/&/g, "&amp;").replace(/'/g, "&#39;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\$/g, "&#36;");
 }
+// ============ ESTIMATION PRIX PANIER ============
+const PRICES = {"poulet":6.5,"filet de poulet":11,"blancs de poulet":11,"blanc de poulet":11,"cuisses de poulet":6,"poulet entier":5.5,"bœuf":15,"boeuf":15,"bœuf haché":12,"boeuf hache":12,"filet de bœuf":28,"steak":18,"bifteck":18,"porc":9,"filet de porc":11,"poitrine de porc":7,"côtes de porc":9,"cotes de porc":9,"agneau":18,"dinde":10,"veau":16,"canard":14,"jambon":12,"lardons":9,"lardon":9,"pancetta":14,"chorizo":13,"saucisses":8.5,"saucisses de porc":8.5,"saindoux":5,"saumon":16,"saumon fumé":35,"thon":12,"crevettes":18,"crevette":18,"moules":5,"lotte":22,"calamars":12,"poisson":12,"fruits de mer":20,"anchois":10,"riz":2.5,"riz basmati":4,"riz complet":3.5,"riz jasmin":4,"riz sauvage":8,"pâtes":2,"spaghetti":2.2,"tagliatelles":2.5,"macaroni":2.2,"farfalle":2.5,"nouilles de riz":4,"vermicelles":3,"farine":1.2,"farine de gruau":1.8,"farine complète":1.6,"farine de pois chiches":4.5,"semoule":1.8,"couscous":2.2,"polenta":2.5,"quinoa":5,"pain":3,"pain pita":2.5,"chapati":2,"biscuits":4,"bretzels":6,"crêpes":4,"fécule de maïs":2.5,"fécule de pomme de terre":2.5,"levure":8,"levure chimique":6,"pâte feuilletée":5,"pâte filo":4.5,"pâte":3,"pomme de terre":1.5,"pommes de terre":1.5,"patate douce":2.5,"flocons d'avoine":2,"tomates":3,"tomate":3,"tomates cerises":6,"tomates concassées":2.5,"concentré de tomates":3.5,"coulis de tomate":3,"tomates en conserve":2,"passata":2.5,"oignon":1.8,"oignons":1.8,"oignon rouge":2.5,"oignons rouges":2.5,"oignons jaunes":1.6,"échalote":6,"echalote":6,"échalotes":6,"echalotes":6,"ail":7,"gousse d'ail":7,"gousses d'ail":7,"carottes":1.5,"poireau":2,"poireaux":2,"céleri":2.5,"celeri":2.5,"céleri-rave":2.5,"celeri-rave":2.5,"chou-fleur":2.5,"chou fleur":2.5,"brocoli":3,"brocoli chinois":4,"chou kale":4,"chou blanc":1.8,"chou-rave":2.5,"chou rave":2.5,"choux de printemps":3,"courgette":2.5,"courgettes":2.5,"aubergine":2.8,"poivron":3.5,"poivron rouge":3.5,"poivrons rouges":3.5,"poivron vert":3,"poivron jaune":3.5,"poivrons":3.2,"piment":8,"piments verts":8,"piment rouge":8,"jalapeño":10,"jalapeno":10,"champignons":5,"champignons de paris":4.5,"portobellos":8,"épinards":4,"epinards":4,"laitue":1.8,"concombre":1.5,"fenouil":3,"panais":2.5,"asperges":9,"petits pois":4,"pois gourmands":6,"haricots rouges":3,"haricots pinto":3,"haricots borlotti":4,"haricots cannellini":4,"haricots":3.5,"lentilles":3,"lentilles corail":3.5,"lentilles brunes":3.2,"lentilles vertes":3.2,"lentilles du puy":6,"pois chiches":3,"radis":2.5,"potiron":2,"courge":2,"topinambour":3,"cresson":6,"châtaignes":8,"chataignes":8,"châtaignes d'eau":8,"maïs":2,"algues nori":20,"avocat":2,"citrouille":1.8,"pomme":2.5,"pommes":2.5,"pommes bramley":3,"poire":2.8,"poires":2.8,"fraise":6,"framboise":8,"banane":1.5,"bananes":1.5,"citron":2.5,"citrons":2.5,"citron vert":3.5,"citrons verts":3.5,"orange":2.5,"mandarine":3,"mangue":2.5,"ananas":1.5,"grenade":2.5,"abricots secs":8,"dattes medjool":10,"raisins secs":5,"raisins de smyrne":6,"raisin sec":5,"canneberges":8,"lait":1.1,"lait de coco":2,"lait condensé":2.5,"crème":4.5,"creme":4.5,"crème fraîche":4.5,"creme fraiche":4.5,"crème épaisse":4.5,"creme epaisse":4.5,"crème de coco":2.5,"creme de coco":2.5,"beurre":7,"beurre doux":7,"beurre demi-sel":7,"beurre d'érable":12,"yaourt":1.5,"fromage":12,"cheddar":10,"parmesan":18,"mozzarella":9,"feta":11,"ricotta":8,"mascarpone":9,"fromage blanc":2.5,"fromage à tartiner":6,"fromage de chèvre":14,"chèvre":14,"stilton":20,"taleggio":18,"grana padano":20,"pecorino":18,"fromage frais":5,"fromage colby":10,"œuf":0.35,"oeuf":0.35,"œufs":0.35,"oeufs":0.35,"jaunes d'œufs":6,"jaunes d'oeufs":6,"blancs d'œufs":5,"blancs d'oeufs":5,"œufs de caille":0.5,"oeufs de caille":0.5,"sucre":1.2,"sucre roux":1.8,"sucre glace":2.5,"sucre en poudre":1.3,"cassonade":2,"sucre demerara":3,"sucre de palme":5,"sucre en grains":1.2,"sirop d'érable":12,"sirop de maïs":4,"sirop doré":5,"mélasse":4,"miel":8,"édulcorant":6,"chocolat":10,"chocolat noir":12,"chocolat blanc":11,"chocolat au lait":9,"cacao":12,"cacao en poudre":10,"pépites de chocolat":10,"pepites de chocolat":10,"huile d'olive":9,"huile végétale":2.5,"huile vegetale":2.5,"huile de tournesol":2.5,"huile de colza":3,"huile de sésame":10,"huile de sesame":10,"huile de coco":8,"huile d'arachide":4,"huile":3,"vinaigre":1.5,"vinaigre balsamique":5,"vinaigre de cidre":2.5,"vinaigre de malt":2,"vinaigre de vin rouge":3,"vinaigre de vin blanc":3,"vinaigrette":4,"moutarde":3,"moutarde de dijon":4,"mayonnaise":4,"ketchup":2.5,"sauce soja":4,"sauce soja foncée":4,"sauce soja claire":4,"sauce de poisson":6,"sauce d'huître":5,"sauce d'huitre":5,"sauce worcestershire":5,"harissa":5,"sambal oelek":5,"sauce chili sucrée":4,"sauce":4,"salsa":4,"sauce tomate":2.5,"bouillon":2,"bouillon de poule":3,"bouillon de volaille":3,"bouillon de bœuf":3,"bouillon de boeuf":3,"bouillon de légumes":2.5,"bouillon de legumes":2.5,"bouillon de poisson":4,"sel":1,"sel de mer":2.5,"poivre":12,"poivre noir":15,"poivre blanc":18,"sel de céleri":4,"sel d'oignon":4,"ail en poudre":8,"oignon en poudre":6,"oignon émincé":3,"piment en poudre":10,"piment de cayenne":12,"paprika":10,"paprika fumé":12,"paprika doux":10,"paprika hongrois":10,"cumin":12,"cumin moulu":12,"curry en poudre":10,"curcuma":8,"cannelle":12,"cannelle moulue":12,"muscade":18,"girofle":20,"cardamome":25,"garam masala":15,"épices biryani":12,"epices biryani":12,"épices à tajine":12,"epices a tajine":12,"épices indiennes":12,"epices indiennes":12,"assaisonnement cajun":10,"épices cajun":10,"epices cajun":10,"curry":10,"safran":30,"anis étoilé":15,"herbes de provence":10,"estragon":20,"aneth":15,"sarriette":12,"marjolaine":12,"sauge":12,"romarin":10,"thym":8,"origan":8,"basilic":15,"basilic frais":15,"basilic séché":12,"basilic seche":12,"persil":6,"persil frais":6,"persil haché":6,"coriandre":6,"coriandre fraîche":6,"coriandre fraiche":6,"menthe":6,"menthe séchée":8,"menthe sechee":8,"ciboulette":8,"ciboule":6,"ciboules":6,"laurier":8,"feuille de laurier":8,"feuilles de laurier":8,"feuilles de basilic":15,"feuilles de coriandre":6,"feuilles d'épinards":4,"feuilles d'epinards":4,"feuilles de sauge":12,"feuilles de combava":15,"bâton de cannelle":15,"baton de cannelle":15,"graines de fenouil":10,"graines de moutarde":8,"graines de coriandre":8,"graines de cumin":10,"graines de sésame":8,"graines de sesame":8,"graine de sésame":8,"graine de sesame":8,"graines de pavot":15,"fenugrec":12,"gingembre":6,"gingembre moulu":8,"raifort":10,"tofu":5,"soja":4,"extrait de vanille":15,"vanille":20,"cognac":25,"rhum":20,"vin blanc":5,"vin rouge":6,"vin rosé":5,"vin":5,"madère":15,"marsala":15,"vermouth":15,"sherry":15,"stout":4,"bière":3,"extrait de levure":8,"eau":0.002,"eau froide":0.002,"amandes":12,"amande":12,"amandes effilées":14,"amandes grillées":13,"poudre d'amandes":14,"cajou":15,"cajous":15,"noix":10,"noix de coco":3,"noix de coco râpée":6,"noix de coco rappee":6,"noisettes":12,"noisette":12,"pistaches":18,"pignons":25,"arachides":4,"pécans":15,"pecans":15,"beurre de cacahuète":6,"sésame":8,"sesame":8,"olives":6,"olives vertes":6,"olives kalamata":9,"chapelure":1.5,"chapelure panko":4,"café":12,"cafe":12,"thé":15,"the":15,"gelée":4,"pudding de noël":8,"glace à la vanille":6,"glace":6,"biscuit salé":5,"biscuits digestifs":5,"crêpe":4,"légumes":3,"legumes":3};
+const STORES = [
+{ id: "lidl", name: "Lidl / Aldi", emoji: "🛒", sub: "Discount — les moins chers", factor: 0.80 },
+{ id: "leclerc", name: "Leclerc", emoji: "🦁", sub: "Grandes surfaces — bon rapport", factor: 0.92 },
+{ id: "intermarche", name: "Intermarché", emoji: "⚔️", sub: "Grandes surfaces", factor: 0.95 },
+{ id: "carrefour", name: "Carrefour", emoji: "🔵", sub: "Grandes surfaces", factor: 0.98 },
+{ id: "casino", name: "Casino / Géant", emoji: "🟢", sub: "Grandes surfaces", factor: 1.02 },
+{ id: "monoprix", name: "Monoprix", emoji: "🔴", sub: "City — plus cher", factor: 1.25 },
+{ id: "bio", name: "Biocoop / Naturalia", emoji: "🌿", sub: "Bio — premium", factor: 1.40 }
+];
+const DEFAULT_RATES = [
+[/poulet|boeuf|bœuf|porc|agneau|veau|dinde|canard|viande/i, 12],
+[/saumon|thon|poisson|crevette|fruits de mer/i, 15],
+[/fromage|parmesan|cheddar/i, 12],
+[/huile|sirop|sauce|vinaigre/i, 5],
+[/épice|epice|poudre|sel|poivre|muscade|cannelle|cumin/i, 10],
+[/herbe|persil|basilic|coriandre|thym|romarin|menthe/i, 6],
+[/farine|sucre|riz|pâtes|pate|pain|biscuit/i, 2],
+[/légume|legume|tomate|oignon|carotte|courgette|salade|chou/i, 2.5],
+[/fruit|pomme|poire|citron|orange|banane/i, 2.5]
+];
+function normalizePriceKey(name) {
+return name.toLowerCase().replace(/^(de |du |des |d'|le |la |les |l')/, "").replace(/\s+/g, " ").trim();
+}
+function lookupPrice(name) {
+const k = normalizePriceKey(name);
+if (PRICES[k] != null) return { rate: PRICES[k], known: true };
+for (const p of DEFAULT_RATES) {
+if (p[0].test(k)) return { rate: p[1], known: false };
+}
+return { rate: 3, known: false };
+}
+function estimateAmount(it) {
+if (it.qty != null && it.unit === "g") return { amount: it.qty / 1000, basis: "kg" };
+if (it.qty != null && it.unit === "l") return { amount: it.qty, basis: "L" };
+if (it.qty != null && !it.unit) return { amount: it.qty, basis: "pc" };
+const m = String(it.name).match(/(\d+(?:[.,]\d+)?)/);
+if (m) { const n = parseFloat(m[1]); return n <= 20 ? { amount: n, basis: "pc" } : { amount: n / 1000, basis: "kg" }; }
+return { amount: 1, basis: "pc" };
+}
+function estimateItemPrice(it, factor) {
+const { rate } = lookupPrice(it.name);
+const { amount, basis } = estimateAmount(it);
+let price;
+if (basis === "pc") {
+const isMeat = /poulet|boeuf|bœuf|porc|agneau|veau|steak|jambon/i.test(it.name);
+price = rate * amount * (isMeat ? 0.3 : 0.15);
+} else {
+price = rate * amount;
+}
+return Math.max(0.1, price * factor);
+}
+function computeBasketEstimate(storeFactor) {
+const items = buildAggregated();
+const rows = [];
+let total = 0;
+let knownCount = 0;
+for (const it of items) {
+const { known } = lookupPrice(it.name);
+if (known) knownCount++;
+const price = estimateItemPrice(it, storeFactor);
+total += price;
+rows.push({ name: it.name, price, known });
+}
+return { rows, total, knownCount, totalCount: items.length };
+}
+function openPriceModal() {
+const items = buildAggregated();
+if (items.length === 0) { alert("Coche des recettes d'abord !"); return; }
+document.getElementById("priceStoreChoice").style.display = "";
+document.getElementById("priceResult").style.display = "none";
+let h = "";
+for (const s of STORES) {
+h += `<button type="button" class="store-choice" onclick="chooseStore('${s.id}')">
+<span class="st-emoji">${s.emoji}</span>
+<span><span>${s.name}</span><div class="st-sub">${s.sub}</div></span>
+</button>`;
+}
+document.getElementById("storeChoices").innerHTML = h;
+document.getElementById("priceModalBg").classList.add("open");
+}
+function closePriceModal() {
+document.getElementById("priceModalBg").classList.remove("open");
+}
+function chooseStore(id) {
+const s = STORES.find(x => x.id === id);
+if (!s) return;
+const est = computeBasketEstimate(s.factor);
+document.getElementById("priceStoreChoice").style.display = "none";
+document.getElementById("priceResult").style.display = "";
+let h = `<div class="section-title" style="margin-top:0">${s.emoji} ${s.name} — détail du panier</div>`;
+for (const r of est.rows) {
+h += `<div class="price-row"><span class="pr-name">${escapeHtml(r.name)}${r.known ? "" : " ~"}</span><span class="pr-val">${r.price.toFixed(2)} €</span></div>`;
+}
+const lo = est.total * 0.85, hi = est.total * 1.15;
+h += `<div class="price-total">
+<div style="font-size:12px;color:var(--muted)">Total estimé (${est.knownCount}/${est.totalCount} produits à prix connu)</div>
+<div class="pt-amount">${est.total.toFixed(2)} €</div>
+<div style="font-size:11px;color:var(--muted)">Fourchette : ${lo.toFixed(2)} – ${hi.toFixed(2)} €</div>
+</div>`;
+h += `<button type="button" class="back-btn" onclick="backToStores()">← Changer de magasin</button>`;
+document.getElementById("priceResult").innerHTML = h;
+}
+function backToStores() {
+document.getElementById("priceResult").style.display = "none";
+document.getElementById("priceStoreChoice").style.display = "";
+}
+
 renderRecipes();</script>
 </body>
 </html>
