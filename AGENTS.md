@@ -9,7 +9,7 @@ Un seul fichier applicatif : `index.html` (HTML+CSS+JS vanilla, ~200 Ko, aucune 
 
 ## Règles d'or du développement
 1. **Toujours tester avant de pousser** : `node -e "const js = require('fs').readFileSync('index.html','utf8').match(/<script>([\s\S]*)<\/script>/)[1]; new Function(js);"` doit afficher SYNTAX OK. Puis un test fonctionnel avec un harnais (voir section Tests).
-2. **Version bump à chaque déploiement** : incrémenter `APP_VERSION` (actuellement 1.15.0). Elle sert d'anti-cache (`db.json?v=` + version).
+2. **Version bump à chaque déploiement** : incrémenter `APP_VERSION` (actuellement 1.16.0). Elle sert d'anti-cache (`db.json?v=` + version).
 3. **Déployer** : commit sur `main` → GitHub Pages rebuild automatiquement (~1-2 min). Vérifier avec `gh api repos/HaroldLev/BulkaLab_MiamMiam/pages/builds/latest --jq '.status'` = "built".
 4. **L'utilisateur recharge depuis son iPhone** : le user doit tuer l'app dans le multitâche et rouvrir pour voir la nouvelle version.
 
@@ -26,7 +26,7 @@ Un seul fichier applicatif : `index.html` (HTML+CSS+JS vanilla, ~200 Ko, aucune 
 3. **Ticket** : photo du ticket → scan **IA Gemini** (vision, JSON direct, détection magasin) avec **fallback Tesseract.js** (parser v3 entraîné sur tickets U Express). Prix réels par enseigne + alimentation auto du frigo.
 4. **Frigo** : stock avec volumes (g/ml/pièces), cumul automatique, images 36px fixes.
 
-Plus le menu **⚙️ Paramètres** : activation/désactivation des 3 sources de recettes.
+Plus le menu **⚙️ Paramètres** : activation/désactivation des 3 sources de recettes. Un bouton **Contact/Report** ouvre un mail pré-rempli vers harold.levrat+miammiam@gmail.com avec la version dans le sujet.
 
 ## Les 3 sources de recettes (db.json)
 | Source | Volume | Particularités |
@@ -68,6 +68,7 @@ const mod = eval('(function(){' + js + '; return { fonctionsATester };})()');
 - Recettes METRO : licence CC-BY 4.0, l'attribution est dans le footer de l'app — **ne pas la retirer**.
 
 ## Historique des versions récentes
+- 1.16.0 : bouton Contact/Report (formulaire + mailto pré-rempli avec version)
 - 1.15.0 : fix enregistrement ticket (compression photo, quota localStorage), images frigo 36px
 - 1.14.0 : scan IA Gemini + fallback Tesseract
 - 1.13.0 : parser v3 entraîné sur vrai ticket U Express
