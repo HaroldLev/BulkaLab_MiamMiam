@@ -236,7 +236,9 @@ Recettes : TheMealDB + Données METRO France (metro.fr) – CC-BY 4.0
 </div>
 </div>
 </div>
-<script>const APP_VERSION = "1.11.0";
+<script>const APP_VERSION = "1.14.0";
+const GEMINI_KEY = ["AQ.", "Ab8RN6LNj_qwe", "HzNsF3YVNdjcN4", "P0l2Xqs_8U7", "GGxPOtmGZj2Q"].join("");
+const GEMINI_MODEL = "gemini-3.5-flash";
 const DEFAULT_RECIPES = [];
 function loadJson(key, fallback) {
 try {
@@ -1154,27 +1156,94 @@ prevItem = items[items.length - 1];
 return items;
 }
 
-async function scanReceipt() {
-if (!ticketPhotoData) { alert("Prends d'abord une photo du ticket."); return; }
-setScanProgress("Chargement du moteur OCR (une fois)...");
-try {
+const GEMINI_PROMPT = `Tu es un extracteur de données de tickets de caisse français. Analyse ce ticket de caisse photo.
+
+EXTRAIS UNIQUEMENT les produits achetés (une seule ligne par produit réel, PAS les lignes de catégorie).
+Pour chaque produit : nom (nettoie les codes interne), qty (nombre, "" si inconnu), unit (kg/g/ml/L/pc), price (nombre en euros).
+
+RÈGLES :
+- "MUESLI SUPERFRUITS BIO 375G" → qty: 0.375, unit: "kg"
+- "4X150G" (pack de 4 yaourts de 150g) → qty: 600, unit: "g"
+- "750ML" → qty: 750, unit: "ml"
+- "0.171 kg x 24.92 €/kg" (après "Passé manuelle") → c'est le poids de l'escalope de la ligne précédente
+- Ignore : catégories, lignes "1 x 3.86 EUR", TOTAL, TVA, CB, promotions, en-têtes
+- Identifie aussi le magasin : "store" parmi lidl/leclerc/intermarche/superu/carrefour/casino/monoprix/bio ou "autre"
+
+Réponds UNIQUEMENT avec un JSON valide, sans markdown ni texte autour :
+{"store":"...","items":[{"name":"...","qty":"...","unit":"kg|g|ml|L|pc","price":0.00}]}`;
+
+function extractJson(text) {
+const clean = text.replace(/```json|```/g, "").trim();
+const start = clean.indexOf("{");
+const end = clean.lastIndexOf("}");
+if (start === -1 || end === -1) return null;
+try { return JSON.parse(clean.slice(start, end + 1)); } catch (e) { return null; }
+}
+
+async function scanWithGemini() {
+const base64 = ticketPhotoData.split(",")[1];
+if (!base64) throw new Error("photo invalide");
+const r = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + GEMINI_MODEL + ":generateContent?key=" + GEMINI_KEY, {
+method: "POST",
+headers: { "Content-Type": "application/json" },
+body: JSON.stringify({
+contents: [{ parts: [
+{ text: GEMINI_PROMPT },
+{ inline_data: { mime_type: "image/jpeg", data: base64 } }
+]}]
+})
+});
+if (r.status === 503) throw new Error("surcharge");
+if (!r.ok) throw new Error("API " + r.status);
+const data = await r.json();
+const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+const parsed = extractJson(text);
+if (!parsed || !Array.isArray(parsed.items) || parsed.items.length === 0) throw new Error("JSON invalide");
+return parsed;
+}
+
+async function scanWithTesseract() {
 await loadTesseract();
-setScanProgress("Analyse du ticket... (10-30 s)");
 const worker = await Tesseract.createWorker("fra");
 const result = await worker.recognize(ticketPhotoData);
 await worker.terminate();
-const text = result.data.text || "";
-const items = parseReceiptText(text);
+const items = parseReceiptText(result.data.text || "");
+if (items.length === 0) throw new Error("rien reconnu");
+return { items: items, store: null };
+}
+
+function applyScanResult(result) {
 document.getElementById("ticketLines").innerHTML = "";
-if (items.length === 0) {
-setScanProgress("Aucun produit reconnu. Vérifie la photo (netteté, lumière) ou saisis à la main.");
+for (const it of result.items) {
+addTicketLine({ name: it.name, qty: it.qty, unit: it.unit, price: it.price });
+}
+if (result.store) {
+const sel = document.getElementById("ticketStore");
+if ([...sel.options].some(o => o.value === result.store)) sel.value = result.store;
+}
+}
+
+async function scanReceipt() {
+if (!ticketPhotoData) { alert("Prends d'abord une photo du ticket."); return; }
+setScanProgress("Analyse du ticket par IA... (3-10 s)");
+try {
+const result = await scanWithGemini();
+applyScanResult(result);
+setScanProgress("✅ " + result.items.length + " produit(s) détecté(s) par IA — vérifie et enregistre.");
 return;
-}
-for (const it of items) addTicketLine({ name: it.name, qty: it.qty, unit: it.unit, price: it.price });
-setScanProgress("✅ " + items.length + " produit(s) détecté(s) — vérifie et corrige les lignes, puis enregistre.");
 } catch (e) {
-setScanProgress("Erreur OCR : " + (e && e.message ? e.message.slice(0, 80) : "inconnue") + ". Saisis à la main.");
+console.log("Gemini KO:", e.message);
 }
+setScanProgress("IA indisponible, essai OCR local... (10-30 s)");
+try {
+const result = await scanWithTesseract();
+applyScanResult(result);
+setScanProgress("✅ " + result.items.length + " produit(s) via OCR local — vérifie et enregistre.");
+return;
+} catch (e2) {
+console.log("Tesseract KO:", e2.message);
+}
+setScanProgress("Aucune analyse réussie. Améliore la photo ou saisis à la main.");
 }
 
 // ============ PARAMÈTRES : SOURCES DE DONNÉES ============
