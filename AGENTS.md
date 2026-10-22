@@ -8,10 +8,48 @@ Un seul fichier applicatif : `index.html` (HTML+CSS+JS vanilla, ~200 Ko, aucune 
 **Repo** : HaroldLev/BulkaLab_MiamMiam (public, voir note juridique plus bas)
 
 ## Règles d'or du développement
-1. **Toujours tester avant de pousser** : `node -e "const js = require('fs').readFileSync('index.html','utf8').match(/<script>([\s\S]*)<\/script>/)[1]; new Function(js);"` doit afficher SYNTAX OK. Puis un test fonctionnel avec un harnais (voir section Tests).
-2. **Version bump à chaque déploiement** : incrémenter `APP_VERSION` (actuellement 1.15.0). Elle sert d'anti-cache (`db.json?v=` + version).
+1. **Toujours tester avant de pousser** : `node -e "const js = require('fs').readFileSync('index.html','utf8').match(/<script>([\s\S]*)<\/script>/)[1]; new Function(js);"` doit afficher SYNTAX OK. Puis un test fonctionnel avec un harnais (voir section Tests). Si db.json modifié : `node -e "JSON.parse(require('fs').readFileSync('db.json','utf8'))"`.
+2. **Version bump à chaque déploiement** : incrémenter `APP_VERSION` (actuellement 1.16.0, ligne ~265). Elle sert d'anti-cache (`db.json?v=` + version).
 3. **Déployer** : commit sur `main` → GitHub Pages rebuild automatiquement (~1-2 min). Vérifier avec `gh api repos/HaroldLev/BulkaLab_MiamMiam/pages/builds/latest --jq '.status'` = "built".
 4. **L'utilisateur recharge depuis son iPhone** : le user doit tuer l'app dans le multitâche et rouvrir pour voir la nouvelle version.
+
+## Processus de déploiement OBLIGATOIRE (à chaque modif déployée)
+À chaque fois que tu déploies une modification sur `main`, suivre ce rythme EXACT :
+
+1. **Modif du code** (index.html et/ou db.json)
+2. **Tests** : syntaxe JS (`new Function(js)`) + JSON si db.json modifié
+3. **Bump APP_VERSION** : ex `1.16.0` → `1.17.0` (ligne ~265 de index.html)
+4. **Commit** avec message descriptif se terminant par `- vX.Y.Z`
+5. **Créer le tag** : `git tag vX.Y.Z` (ex: `git tag v1.17.0`)
+6. **Push branche + tag** : `git push origin main && git push origin vX.Y.Z`
+7. **Vérifier le build GitHub Pages** : `gh api repos/HaroldLev/BulkaLab_MiamMiam/pages/builds/latest --jq '.status'` doit renvoyer `"built"`
+8. **Mettre à jour l'historique** dans ce fichier AGENTS.md (section "Historique des versions")
+
+> **Pourquoi le tag ?** Chaque version déployée est un point de restauration. Si une modif ne plaît pas à Harold, il peut revenir en arrière en 1 commande avec `rollback.sh` (voir section Rollback).
+
+## Rollback (revenir à une version précédente)
+Si Harold demande à revenir en arrière ou si une modif casse l'app :
+
+```bash
+# Voir les versions disponibles
+./rollback.sh                    # ou: git tag -l "v1.*" --sort=-v:refname
+
+# Revenir à une version (ex: v1.15.0)
+./rollback.sh v1.15.0
+# → vérifie JS+JSON, Entrée pour déployer
+
+# Ou manuellement :
+git checkout -B main v1.15.0
+git push origin main --force-with-lease
+```
+
+Le script `rollback.sh` est à la racine du workspace (`/workspace/rollback.sh`), pas dans le repo. Les tags `v1.x.y` sont sur GitHub et en local.
+
+## Sécurité du repo
+- **Ne JAMAIS supprimer le repo, la branche `main`, ou faire un `git push -f` non sollicité.**
+- Chaque commit/tag est un point de restauration permanent. Ne pas réécrire l'historique.
+- Branche `backup-local` : copie figée du dernier état connu bon (ne pas supprimer).
+- En cas de doute sur une modif : créer une branche de test, ne pas pousser sur `main` directement.
 
 ## Stack et architecture
 - **Zéro framework** : HTML/CSS/JS vanilla dans un seul `index.html`. C'est un choix — la simplicité prime.
@@ -67,7 +105,8 @@ const mod = eval('(function(){' + js + '; return { fonctionsATester };})()');
 - Les 429 recettes **Marmiton** sont du contenu protégé (CGU + droit d'auteur), stockées dans un repo **public**. Décision prise en connaissance de cause : usage perso, risque jugé faible. **Si l'app devait être partagée publiquement** → passer le repo en privé + Netlify (gratuit) ou purger Marmiton.
 - Recettes METRO : licence CC-BY 4.0, l'attribution est dans le footer de l'app — **ne pas la retirer**.
 
-## Historique des versions récentes
+## Historique des versions
+- 1.16.0 : bouton Contact/Report (mailto pré-rempli avec version)
 - 1.15.0 : fix enregistrement ticket (compression photo, quota localStorage), images frigo 36px
 - 1.14.0 : scan IA Gemini + fallback Tesseract
 - 1.13.0 : parser v3 entraîné sur vrai ticket U Express
