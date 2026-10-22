@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Mes Recettes</title>
+<title>MioumMioum</title>
 <style>:root{--bg:#f7f5f2;--card:#ffffff;--primary:#ff6b4a;--primary-dark:#e5532f;--text:#2b2b2b;--muted:#8a8a8a;--border:#eae6e1;--green:#2e9e5b}*{box-sizing:border-box;margin:0;padding:0;}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);padding-bottom:100px;padding-bottom:calc(100px + env(safe-area-inset-bottom))}header{position:sticky;top:0;z-index:10;background:var(--primary);color:white;padding:16px 16px 12px;padding-top:calc(16px + env(safe-area-inset-top))}.settings-btn{border:none;background:rgba(255,255,255,.25);color:white;border-radius:12px;padding:8px 10px;font-size:20px;cursor:pointer}
 .settings-btn:active{background:rgba(255,255,255,.4)}
 header h1{font-size:22px;font-weight:700}.tabs{display:flex;gap:8px;margin-top:12px}.tab{flex:1;border:none;background:rgba(255,255,255,.2);color:white;padding:9px 4px;border-radius:12px;font-size:13px;font-weight:600}.tab.active{background:white;color:var(--primary-dark)}main{padding:16px;max-width:640px;margin:0 auto}.section-title{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:8px 2px 10px;font-weight:700}.recipe-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer;}.recipe-card.selected{border-color:var(--primary);background:#fff4f0}.recipe-thumb{width:52px;height:52px;border-radius:12px;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:30px;flex-shrink:0;background:#fff4f0}
@@ -74,7 +74,7 @@ ticket-select, .ticket-select{width:100%;border:1px solid var(--border);border-r
 <body>
 <header>
 <div style="display:flex;align-items:center;justify-content:space-between">
-<h1>🍽️ Mes Recettes</h1>
+<h1>🍽️ MioumMioum</h1>
 <button class="settings-btn" onclick="openFeedback()" title="Contact / Report">💬</button>
 <button class="settings-btn" onclick="openSettings()" title="Paramètres">⚙️</button>
 </div>
@@ -172,7 +172,7 @@ ticket-select, .ticket-select{width:100%;border:1px solid var(--border);border-r
 <div id="dbSources"></div>
 <div class="hint" style="margin-top:8px">Les suggestions et la recherche ne piocheront que dans les bases sélectionnées.</div>
 <div class="section-title">À propos</div>
-<div style="font-size:13px;color:var(--muted);line-height:1.6">MiamMiam v<span id="settingsVersion"></span> — 1630 recettes disponibles.<br>Sources : TheMealDB · METRO France (CC-BY 4.0) · Marmiton (usage personnel).<br>Tes recettes et ta liste restent enregistrées sur ton appareil.</div>
+<div style="font-size:13px;color:var(--muted);line-height:1.6">MioumMioum v<span id="settingsVersion"></span> — 1630 recettes disponibles.<br>Sources : TheMealDB · METRO France (CC-BY 4.0) · MioumMioum Recettes (usage personnel).<br>Tes recettes et ta liste restent enregistrées sur ton appareil.</div>
 <div class="modal-actions">
 <button class="btn btn-primary" onclick="closeSettings()">Fermer</button>
 </div>
@@ -267,7 +267,7 @@ Recettes : TheMealDB + Données METRO France (metro.fr) – CC-BY 4.0
 </div>
 </div>
 </div>
-<script>const APP_VERSION = "1.17.0";
+<script>const APP_VERSION = "1.18.0";
 const GEMINI_KEY = ["AQ.", "Ab8RN6LNj_qwe", "HzNsF3YVNdjcN4", "P0l2Xqs_8U7", "GGxPOtmGZj2Q"].join("");
 const GEMINI_MODEL = "gemini-3.5-flash";
 const DEFAULT_RECIPES = [];
@@ -1328,8 +1328,8 @@ function sendFeedback() {
 const type = document.getElementById("fbType").value;
 const msg = document.getElementById("fbMessage").value.trim();
 if (!msg) { alert("Écris ton message d'abord."); return; }
-const subject = "[MiamMiam] " + type + " (v" + APP_VERSION + ")";
-const body = msg + "\n\n---\nEnvoyé depuis MiamMiam v" + APP_VERSION;
+const subject = "[MioumMioum] " + type + " (v" + APP_VERSION + ")";
+const body = msg + "\n\n---\nEnvoyé depuis MioumMioum v" + APP_VERSION;
 const mailto = "mailto:harold.levrat%2Bmiammiam@gmail.com?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
 window.location.href = mailto;
 closeFeedback();
@@ -1339,7 +1339,7 @@ closeFeedback();
 const DB_SOURCES = [
 { id: "metro", name: "METRO — Recettes de chefs", emoji: "🧪", sub: "411 recettes françaises de chefs professionnels (portions réelles, étapes détaillées)" },
 { id: "themealdb", name: "TheMealDB — Cuisine du monde", emoji: "🌍", sub: "790 recettes internationales avec photos" },
-{ id: "marmiton", name: "Marmiton — Classiques français", emoji: "🍽️", sub: "429 classiques de la cuisine française notés par les internautes (usage personnel)" }
+{ id: "marmiton", name: "MioumMioum Recettes — Classiques français", emoji: "🍽️", sub: "429 classiques de la cuisine française notés par les internautes (usage personnel)" }
 ];
 let activeSources = loadJson("dbSources", null);
 if (!Array.isArray(activeSources) || activeSources.length === 0) {

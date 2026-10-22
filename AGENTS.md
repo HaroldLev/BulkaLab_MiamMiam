@@ -1,4 +1,4 @@
-# MiamMiam — Guide de session
+# MioumMioum — Guide de session
 
 ## Qu'est-ce que ce projet
 App web mobile-first (PWA légère) de gestion de recettes et liste de courses pour Harold, usage **strictement personnel**.
@@ -9,7 +9,7 @@ Un seul fichier applicatif : `index.html` (HTML+CSS+JS vanilla, ~200 Ko, aucune 
 
 ## Règles d'or du développement
 1. **Toujours tester avant de pousser** : `node -e "const js = require('fs').readFileSync('index.html','utf8').match(/<script>([\s\S]*)<\/script>/)[1]; new Function(js);"` doit afficher SYNTAX OK. Puis un test fonctionnel avec un harnais (voir section Tests). Si db.json modifié : `node -e "JSON.parse(require('fs').readFileSync('db.json','utf8'))"`.
-2. **Version bump à chaque déploiement** : incrémenter `APP_VERSION` (actuellement 1.16.0, ligne ~265). Elle sert d'anti-cache (`db.json?v=` + version).
+2. **Version bump à chaque déploiement** : incrémenter `APP_VERSION` (actuellement 1.18.0, ligne ~265). Elle sert d'anti-cache (`db.json?v=` + version).
 3. **Déployer** : commit sur `main` → GitHub Pages rebuild automatiquement (~1-2 min). Vérifier avec `gh api repos/HaroldLev/BulkaLab_MiamMiam/pages/builds/latest --jq '.status'` = "built".
 4. **L'utilisateur recharge depuis son iPhone** : le user doit tuer l'app dans le multitâche et rouvrir pour voir la nouvelle version.
 
@@ -69,7 +69,7 @@ Plus le menu **⚙️ Paramètres** : activation/désactivation des 3 sources de
 ## Les 3 sources de recettes (db.json)
 | Source | Volume | Particularités |
 |---|---|---|
-| **Marmiton** (scrapé) | 429 | Classiques FR notés ⭐ par internautes — **usage perso, voir note juridique** |
+| **MioumMioum Recettes** (scrapé) | 429 | Classiques FR notés ⭐ par internautes — **usage perso, voir note juridique** |
 | **METRO France** | 411 | Recettes pro FR, CC-BY 4.0, attribution obligatoire (footer) |
 | **TheMealDB** | 790 | International, photos, instructions en anglais (traduction par règles intégrées) |
 
@@ -102,16 +102,18 @@ const mod = eval('(function(){' + js + '; return { fonctionsATester };})()');
 ```
 
 ## Note juridique (répétée à chaque session si nécessaire)
-- Les 429 recettes **Marmiton** sont du contenu protégé (CGU + droit d'auteur), stockées dans un repo **public**. Décision prise en connaissance de cause : usage perso, risque jugé faible. **Si l'app devait être partagée publiquement** → passer le repo en privé + Netlify (gratuit) ou purger Marmiton.
+- Les 429 recettes **MioumMioum Recettes** (anciennement Marmiton) sont du contenu protégé (CGU + droit d'auteur), stockées dans un repo **public**. Décision prise en connaissance de cause : usage perso, risque jugé faible. **Si l'app devait être partagée publiquement** → passer le repo en privé + Netlify (gratuit) ou purger les recettes MioumMioum.
 - Recettes METRO : licence CC-BY 4.0, l'attribution est dans le footer de l'app — **ne pas la retirer**.
 
 ## Historique des versions
+- 1.18.0 : renommage de l’app en MioumMioum, source renommée « MioumMioum Recettes » (textes + instructions db.json)
+- 1.17.0 : Ticket — choix caméra ou galerie pour la photo (import image depuis le téléphone)
 - 1.16.0 : bouton Contact/Report (mailto pré-rempli avec version)
 - 1.15.0 : fix enregistrement ticket (compression photo, quota localStorage), images frigo 36px
 - 1.14.0 : scan IA Gemini + fallback Tesseract
 - 1.13.0 : parser v3 entraîné sur vrai ticket U Express
 - 1.11-1.12 : onglets Ticket/Frigo, prix réels par enseigne, OCR Tesseract initial
-- 1.9-1.10 : menu Paramètres, base Marmiton scrapée (429 recettes)
+- 1.9-1.10 : menu Paramètres, base MioumMioum Recettes scrapée (429 recettes, ex-Marmiton)
 
 ## Secret scanning GitHub
 Le push est **bloqué** si un secret est détecté (clés GCP/API). La clé Gemini est fragmentée pour l'éviter. Si un push est rejeté : voir le message d'erreur, soit obfusquer, soit suivre le lien unblock de GitHub (avec accord explicite d'Harold).
