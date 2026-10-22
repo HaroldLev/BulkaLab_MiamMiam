@@ -100,7 +100,12 @@ ticket-select, .ticket-select{width:100%;border:1px solid var(--border);border-r
 <div class="section-title">Ticket de caisse</div>
 <div class="field">
 <label>Photo du ticket (optionnel)</label>
-<input type="file" id="ticketPhoto" accept="image/*" capture="environment" onchange="onTicketPhoto(event)" style="padding:8px">
+<input type="file" id="ticketPhoto" accept="image/*" capture="environment" style="display:none" onchange="onTicketPhoto(event)">
+<input type="file" id="ticketGallery" accept="image/*" style="display:none" onchange="onTicketPhoto(event)">
+<div style="display:flex;gap:8px;margin-top:6px">
+<button class="btn btn-secondary" style="flex:1" onclick="pickTicketPhoto('camera')">📷 Prendre une photo</button>
+<button class="btn btn-secondary" style="flex:1" onclick="pickTicketPhoto('gallery')">🖼️ Importer une image</button>
+</div>
 <img id="ticketPhotoPreview" class="ticket-photo" style="display:none" alt="ticket">
 <button class="btn btn-primary" style="width:100%;margin-top:6px" onclick="scanReceipt()">📷 Scanner le ticket (OCR)</button>
 <div id="scanProgress" class="hint" style="display:none"></div>
@@ -262,7 +267,7 @@ Recettes : TheMealDB + Données METRO France (metro.fr) – CC-BY 4.0
 </div>
 </div>
 </div>
-<script>const APP_VERSION = "1.16.0";
+<script>const APP_VERSION = "1.17.0";
 const GEMINI_KEY = ["AQ.", "Ab8RN6LNj_qwe", "HzNsF3YVNdjcN4", "P0l2Xqs_8U7", "GGxPOtmGZj2Q"].join("");
 const GEMINI_MODEL = "gemini-3.5-flash";
 const DEFAULT_RECIPES = [];
@@ -938,6 +943,9 @@ img.onerror = () => resolve(dataUrl);
 img.src = dataUrl;
 });
 }
+function pickTicketPhoto(source) {
+document.getElementById(source === "camera" ? "ticketPhoto" : "ticketGallery").click();
+}
 function onTicketPhoto(ev) {
 const f = ev.target.files && ev.target.files[0];
 if (!f) return;
@@ -1036,6 +1044,7 @@ renderTickets();
 renderFridge();
 document.getElementById("ticketLines").innerHTML = "";
 document.getElementById("ticketPhoto").value = "";
+document.getElementById("ticketGallery").value = "";
 document.getElementById("ticketPhotoPreview").style.display = "none";
 ticketPhotoData = null;
 ticketPhotoThumb = null;
