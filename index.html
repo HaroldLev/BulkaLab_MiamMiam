@@ -1074,57 +1074,68 @@ el.textContent = txt || "";
 //   "PAIN DE MIE     1,95"               (produit prix)
 //   "0,534 kg * 2,13"                    (variante poids)
 //   "2 x 1,95"                           (promo quantité)
-const STOP_WORDS = /^(total|tva|ticket|carte|cb|espèces|cheque|merci|bonjour|sous.?total|remise|solde|articles?|caisse|client|magasin|adresse|siret|www|http|numero|loyer|consigne|emballage|paiement|montant|rendu|coupon|fidelite|points?|bienvenue)/i;
+const STOP_WORDS = /^(total|tva|ticket|carte|cb|espèces|cheque|merci|bonjour|sous.?total|remise|solde|articles?|caisse|client|magasin|adresse|siret|www|http|numero|loyer|consigne|emballage|paiement|montant|rendu|coupon|fidelite|points?|bienvenue|vente|offres?|valable|code|photos|calendrier|garantie|denr|ouverture|ouvert|dimanche|lundi|samedi|telephone|omnipos|fiscal|impressions?|traitement|cumulable|foyer)/i;
 function parseReceiptText(text) {
-const lines = text.split(/\n|\r/).map(l => l.trim()).filter(l => l.length > 2);
+const rawLines = text.split(/\n|\r/).map(l => l.trim()).filter(l => l.length > 1);
 const items = [];
 let seenTotal = false;
 let prevLine = "";
-for (const line of lines) {
-if (STOP_WORDS.test(line)) continue;
-if (/^total/i.test(line)) { seenTotal = true; continue; }
+let prevItem = null;
+for (const line of rawLines) {
+if (/^total/i.test(line) && /\d/.test(line)) { seenTotal = true; }
+if (/nombre de lignes/i.test(line) || /^sous.?total/i.test(line)) { seenTotal = true; }
 if (seenTotal) continue;
-const priceMatch = line.match(/(\d{1,4})[,.](\d{2})\s*\u20ac?\s*$/);
-if (!priceMatch) { if (!/^\d+[.,]/.test(line)) prevLine = line; continue; }
+if (STOP_WORDS.test(line)) continue;
+if (/^\d+\s*[x\u00d7]\s*[\d.,]+\s*(eur|\u20ac)/i.test(line)) continue;
+if (/pass\u00e9e?\s+manuelle/i.test(line)) continue;
+const unitWeight = line.match(/^(\d+(?:[.,]\d+)?)\s*(kg|g)\s*[x\u00d7]\s*(\d+(?:[.,]\d+)?)\s*\u20ac?\s*\/\s*(kg|g|l)/i);
+if (unitWeight && prevItem && prevItem.unit === "pc") {
+const w = parseFloat(unitWeight[1].replace(",", "."));
+const isKg = unitWeight[2].toLowerCase() === "kg";
+prevItem.qty = String(isKg ? w : w / 1000);
+prevItem.unit = "kg";
+continue;
+}
+const priceMatch = line.match(/(\d{1,4})[.,](\d{2})\s*(\u20ac|eur)?\s*\d{0,2}\s*$/i);
+if (!priceMatch) {
+if (!/^\d/.test(line) && line.length > 3) prevLine = line;
+continue;
+}
 const price = parseInt(priceMatch[1]) + parseInt(priceMatch[2]) / 100;
 let rest = line.slice(0, line.length - priceMatch[0].length).trim();
 if (price <= 0 || price > 500) { prevLine = line; continue; }
-// cas poids seul "0,534 kg * 2,13" → nom sur la ligne précédente
-const weightOnly = rest.match(/^(\d+(?:[.,]\d+)?)\s*(kg|g)\s*[*\u00d7]?\s*$/i);
-if (weightOnly) {
-const w = parseFloat(weightOnly[1].replace(",", "."));
-const isKg = weightOnly[2].toLowerCase() === "kg";
-const name = prevLine;
-prevLine = "";
-if (name && name.length > 2 && !/\d{1,4}[,.]\d{2}/.test(name)) {
-items.push({ name, qty: String(isKg ? w : w / 1000), unit: "kg", price });
-continue;
-}
-}
-const weightMatch = rest.match(/(\d+(?:[.,]\d+)?)\s*(kg|g)\s*(?:[*\u00d7])?/i);
+const weightMatch = rest.match(/(\d+(?:[.,]\d+)?)\s*(kg|g)\b/i);
 const volMatch = rest.match(/(\d+(?:[.,]\d+)?)\s*(l|cl|ml)\b/i);
-const qtyArticle = rest.match(/^(\d{1,2})\s+(?![,.])(.+)/);
+const qtyArticle = rest.match(/^(\d{1,2})\s+(?![.,\d])(.+)/);
+const packMatch = rest.match(/(\d{1,2})\s*[x\u00d7]\s*(\d+(?:[.,]\d+)?)\s*(g|ml|cl|l)\b/i);
 let name = "", qty = "", unit = "pc";
-if (weightMatch) {
+if (packMatch) {
+const n = parseInt(packMatch[1]);
+const v = parseFloat(packMatch[2].replace(",", "."));
+const vu = packMatch[3].toLowerCase();
+name = rest.replace(packMatch[0], "").trim();
+const totalV = vu === "g" ? v * n : vu === "ml" ? v * n : vu === "l" ? v * n * 1000 : v * n * 10;
+qty = String(Math.round(totalV));
+unit = vu === "g" ? "g" : "ml";
+} else if (weightMatch) {
 const w = parseFloat(weightMatch[1].replace(",", "."));
 const isKg = weightMatch[2].toLowerCase() === "kg";
 const stripped = rest.replace(weightMatch[0], "").replace(/[*\u00d7]/g, "").trim();
 name = stripped || prevLine;
-qty = String(isKg ? w : w / 1000);
-unit = "kg";
+if (w >= 10 && !isKg) { qty = String(w / 1000); unit = "kg"; }
+else { qty = String(w); unit = "kg"; }
 } else if (qtyArticle && volMatch) {
 const q = parseInt(qtyArticle[1]);
 const v = parseFloat(volMatch[1].replace(",", "."));
 const vu = volMatch[2].toLowerCase();
-let totalMl = vu === "l" ? v * 1000 : vu === "cl" ? v * 10 : v;
+const totalMl = vu === "l" ? v * 1000 : vu === "cl" ? v * 10 : v;
 name = (qtyArticle[2] || "").replace(volMatch[0], "").trim() || rest;
 qty = String(Math.round(totalMl * q));
 unit = "ml";
 } else if (qtyArticle) {
 const q = parseInt(qtyArticle[1]);
 name = (qtyArticle[2] || "").trim();
-if (q >= 1 && q <= 20) { qty = String(q); unit = "pc"; }
-else { name = rest; }
+if (q >= 1 && q <= 20) { qty = String(q); unit = "pc"; } else { name = rest; }
 } else if (volMatch) {
 const v = parseFloat(volMatch[1].replace(",", "."));
 const vu = volMatch[2].toLowerCase();
@@ -1132,12 +1143,13 @@ name = rest.replace(volMatch[0], "").trim() || rest;
 qty = String(vu === "l" ? Math.round(v * 1000) : vu === "cl" ? Math.round(v * 10) : Math.round(v));
 unit = "ml";
 } else {
-name = rest;
+name = rest || prevLine;
 }
-prevLine = line;
+prevLine = "";
 if (!name || name.length < 2) continue;
-name = name.replace(/\s{2,}/g, " ").replace(/^[-*\u2022]+\s*/, "").replace(/\s*[x\u00d7]\s*\d+\s*$/i, "").trim();
+name = name.replace(/\s{2,}/g, " ").replace(/^[-*\u2022]+\s*/, "").trim();
 items.push({ name, qty, unit, price });
+prevItem = items[items.length - 1];
 }
 return items;
 }
