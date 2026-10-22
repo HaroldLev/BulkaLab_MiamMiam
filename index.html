@@ -7,7 +7,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Mes Recettes</title>
 <style>:root{--bg:#f7f5f2;--card:#ffffff;--primary:#ff6b4a;--primary-dark:#e5532f;--text:#2b2b2b;--muted:#8a8a8a;--border:#eae6e1;--green:#2e9e5b}*{box-sizing:border-box;margin:0;padding:0;}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);padding-bottom:100px;padding-bottom:calc(100px + env(safe-area-inset-bottom))}header{position:sticky;top:0;z-index:10;background:var(--primary);color:white;padding:16px 16px 12px;padding-top:calc(16px + env(safe-area-inset-top))}header h1{font-size:22px;font-weight:700}.tabs{display:flex;gap:8px;margin-top:12px}.tab{flex:1;border:none;background:rgba(255,255,255,.2);color:white;padding:10px;border-radius:12px;font-size:15px;font-weight:600}.tab.active{background:white;color:var(--primary-dark)}main{padding:16px;max-width:640px;margin:0 auto}.section-title{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:8px 2px 10px;font-weight:700}.recipe-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer;}.recipe-card.selected{border-color:var(--primary);background:#fff4f0}.recipe-thumb{width:52px;height:52px;border-radius:12px;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:30px;flex-shrink:0;background:#fff4f0}
-.recipe-thumb img{width:100%;height:100%;object-fit:cover}.recipe-info{flex:1}.recipe-name{font-weight:700;font-size:16px}.recipe-meta{font-size:13px;color:var(--muted);margin-top:3px}.check{width:26px;height:26px;border-radius:50%;border:2px solid #ccc;flex-shrink:0;display:flex;align-items:center;justify-content:center}.recipe-card.selected .check{background:var(--primary);border-color:var(--primary);color:white}.ing-row{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px}.ing-row input[type=checkbox]{width:20px;height:20px;accent-color:var(--green);flex-shrink:0}.ing-name{font-size:15px}.ing-qty{font-size:13px;color:var(--muted)}.ing-row.checked .ing-name{text-decoration:line-through;color:var(--muted)}.empty{text-align:center;color:var(--muted);padding:40px 20px;font-size:15px}footer{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);padding:12px 16px calc(12px + env(safe-area-inset-bottom));display:flex;gap:10px}.btn{flex:1;border:none;border-radius:14px;padding:14px;font-size:16px;font-weight:700;cursor:pointer}.btn-primary{background:var(--primary);color:white}.btn-primary:disabled{background:#ddd;color:#999}.btn-secondary{background:#f0ece8;color:var(--text)}.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:50;display:none;align-items:flex-end;justify-content:center}.modal-bg.open{display:flex}.modal{background:var(--card);width:100%;max-width:640px;border-radius:20px 20px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom));max-height:85vh;overflow-y:auto}.modal h2{font-size:18px;margin-bottom:14px}.field{margin-bottom:12px}.field label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:5px}.field input,.field textarea{width:100%;border:1px solid var(--border);border-radius:10px;padding:11px 12px;font-size:16px;font-family:inherit;background:var(--bg)}.field textarea{height:90px;resize:vertical}.hint{font-size:12px;color:var(--muted);margin-top:4px}.modal-actions{display:flex;gap:10px;margin-top:16px}.hidden{display:none}.view-btn{border:1px solid var(--border);border-radius:10px;padding:4px 7px;font-size:13px;background:#fff;cursor:pointer}
+.recipe-thumb img{width:100%;height:100%;object-fit:cover}.recipe-info{flex:1}.recipe-name{font-weight:700;font-size:16px}.recipe-meta{font-size:13px;color:var(--muted);margin-top:3px}.check{width:26px;height:26px;border-radius:50%;border:2px solid #ccc;flex-shrink:0;display:flex;align-items:center;justify-content:center}.recipe-card.selected .check{background:var(--primary);border-color:var(--primary);color:white}.ing-row{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px}.ing-row input[type=checkbox]{width:20px;height:20px;accent-color:var(--green);flex-shrink:0}.ing-row img{width:36px;height:36px;border-radius:50%;background:#f7f5f2;object-fit:cover;flex-shrink:0}
+.ing-row .di-ph{width:36px;height:36px;border-radius:50%;background:#fff4f0;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.ing-name{font-size:15px}.ing-qty{font-size:13px;color:var(--muted)}.ing-row.checked .ing-name{text-decoration:line-through;color:var(--muted)}.empty{text-align:center;color:var(--muted);padding:40px 20px;font-size:15px}footer{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);padding:12px 16px calc(12px + env(safe-area-inset-bottom));display:flex;gap:10px}.btn{flex:1;border:none;border-radius:14px;padding:14px;font-size:16px;font-weight:700;cursor:pointer}.btn-primary{background:var(--primary);color:white}.btn-primary:disabled{background:#ddd;color:#999}.btn-secondary{background:#f0ece8;color:var(--text)}.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:50;display:none;align-items:flex-end;justify-content:center}.modal-bg.open{display:flex}.modal{background:var(--card);width:100%;max-width:640px;border-radius:20px 20px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom));max-height:85vh;overflow-y:auto}.modal h2{font-size:18px;margin-bottom:14px}.field{margin-bottom:12px}.field label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:5px}.field input,.field textarea{width:100%;border:1px solid var(--border);border-radius:10px;padding:11px 12px;font-size:16px;font-family:inherit;background:var(--bg)}.field textarea{height:90px;resize:vertical}.hint{font-size:12px;color:var(--muted);margin-top:4px}.modal-actions{display:flex;gap:10px;margin-top:16px}.hidden{display:none}.view-btn{border:1px solid var(--border);border-radius:10px;padding:4px 7px;font-size:13px;background:#fff;cursor:pointer}
 .servings-badge{border:1px solid var(--border);border-radius:10px;padding:4px 8px;font-size:11px;font-weight:700;background:#fff;cursor:pointer;white-space:nowrap}
 .delete-recipe{border:none;background:none;color:#d33;font-size:20px;padding:4px 8px;cursor:pointer}.search-results{margin-top:6px}.result-card{display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:8px;margin-bottom:8px;cursor:pointer}.result-card img{width:52px;height:52px;border-radius:10px;object-fit:cover}.result-name{font-weight:600;font-size:15px}.result-meta{font-size:12px;color:var(--muted)}.detail-hero{width:100%;height:200px;object-fit:cover;border-radius:14px;margin-bottom:12px}
 .detail-hero-placeholder{width:100%;height:200px;border-radius:14px;margin-bottom:12px;background:#fff4f0;display:flex;align-items:center;justify-content:center;font-size:60px}
@@ -150,7 +152,7 @@
 </div>
 </div>
 </div>
-<script>const APP_VERSION = "1.6.0";
+<script>const APP_VERSION = "1.7.0";
 const DEFAULT_RECIPES = [];
 function loadJson(key, fallback) {
 try {
@@ -274,14 +276,121 @@ map[key].qty += p.qty;
 map[key].qty = p.qty; map[key].unit = p.unit;
 } else {
 map[key].units.push(line);
+if (p.qty != null && map[key].unit == null) {
+map[key].qty = p.qty;
+map[key].unit = p.unit;
+}
 }
 map[key].count++;
 }
 }
 return Object.values(map).sort((a, b) => a.name.localeCompare(b.name, "fr"));
 }
+const NAME_SYNONYMS = {
+"oeuf":"oeuf","oeufs":"oeuf","oeuf entier":"oeuf",
+"tomate":"tomate","tomates":"tomate","tomate cerise":"tomate cerise","tomates cerises":"tomate cerise","tomates cerise":"tomate cerise",
+"oignon":"oignon","oignons":"oignon","oignon rouge":"oignon rouge","oignons rouges":"oignon rouge","oignon jaune":"oignon","oignons jaunes":"oignon","echalote":"oignon rouge","echalotes":"oignon rouge",
+"ail":"ail","gousse d'ail":"ail","gousses d'ail":"ail","ail en poudre":"ail",
+"pomme de terre":"pomme de terre","pommes de terre":"pomme de terre","patate":"pomme de terre","patates":"pomme de terre",
+"carotte":"carotte","carottes":"carotte",
+"poulet":"poulet","poulet entier":"poulet","blanc de poulet":"poulet","blancs de poulet":"poulet","cuisses de poulet":"poulet","poulet hache":"poulet",
+"crevette":"crevette","crevettes":"crevette","grosses crevettes":"crevette",
+"farine":"farine","farine de gruau":"farine","farine complete":"farine","farine blanche":"farine","farine a lever":"farine",
+"sucre":"sucre","sucre en poudre":"sucre","sucre roux":"sucre","sucre glace":"sucre","cassonade":"sucre",
+"sel":"sel","sel de mer":"sel","poivre":"poivre","poivre noir":"poivre",
+"beurre":"beurre","beurre doux":"beurre","beurre demi-sel":"beurre","beurre sale":"beurre",
+"huile":"huile","huile d'olive":"huile olive","huile olive":"huile olive","huile vegetale":"huile","huile de tournesol":"huile","huile de colza":"huile","huile d'arachide":"huile","huile de sesame":"huile d'olive",
+"lait":"lait","lait de coco":"lait de coco",
+"creme":"creme","creme fraiche":"creme","creme epaisse":"creme","creme fraiche epaisse":"creme","double creme":"creme",
+"champignon":"champignon","champignons":"champignon","champignons de paris":"champignon",
+"citron":"citron","citrons":"citron","jus de citron":"citron","zeste de citron":"citron","citron vert":"citron","citrons verts":"citron","jus de citron vert":"citron",
+"poivron":"poivron","poivrons":"poivron","poivron rouge":"poivron","poivrons rouges":"poivron","poivron vert":"poivron","poivron jaune":"poivron",
+"riz":"riz","riz basmati":"riz","riz blanc":"riz","riz jasmin":"riz","riz complet":"riz","riz gluant":"riz gluant",
+"pate":"pate","pates":"pate","pates fraiches":"pate","nouilles":"pate","nouille":"pate","nouilles de riz":"pate",
+"bouillon":"bouillon","bouillon de poule":"bouillon","bouillon de volaille":"bouillon","bouillon de legumes":"bouillon","bouillon de boeuf":"bouillon","bouillon de poisson":"bouillon","cube de bouillon":"bouillon",
+"fromage":"fromage","cheddar":"fromage","cheddar rape":"fromage","mozzarella":"mozzarella","parmesan":"parmesan","parmesan rape":"parmesan","feta":"feta",
+"saucisse":"saucisse","saucisses":"saucisse","chorizo":"chorizo","lardon":"lardon","lardons":"lardon","jambon":"jambon",
+"piment":"piment","piments":"piment","piment rouge":"piment","piments verts":"piment","chili":"piment",
+"basilic":"basilic","basilic frais":"basilic","feuilles de basilic":"basilic",
+"persil":"persil","persil frais":"persil","persil hache":"persil",
+"coriandre":"coriandre","coriandre fraiche":"coriandre","feuilles de coriandre":"coriandre","coriandre fraiche":"coriandre",
+"menthe":"menthe","feuille de menthe":"menthe","feuilles de menthe":"menthe",
+"gingembre":"gingembre","gingembre moulu":"gingembre","gingembre frais":"gingembre",
+"epinard":"epinard","epinards":"epinard","feuilles d'epinards":"epinard",
+"chou":"chou","chou blanc":"chou","chou rouge":"chou","chou-fleur":"chou-fleur","chou fleur":"chou-fleur","brocoli":"brocoli",
+"courgette":"courgette","courgettes":"courgette","zucchini":"courgette",
+"aubergine":"aubergine","aubergines":"aubergine","eggplant":"aubergine",
+"saumon":"saumon","saumon fume":"saumon fume","thon":"thon",
+"amande":"amande","amandes":"amande","amandes effilees":"amande","amandes entieres":"amande","poudre d'amandes":"amande","amandes grill?ees":"amande","amandes grillées":"amande",
+"oeufs de caille":"oeuf",
+"noix":"noix","noix de coco":"noix de coco","noix de coco rapee":"noix de coco",
+"sirop":"sirop","sirop d'erable":"sirop d'erable","miel":"miel",
+"chocolat":"chocolat","chocolat noir":"chocolat","chocolat au lait":"chocolat","cacao":"chocolat",
+"vanille":"vanille","extrait de vanille":"vanille",
+"cafe":"cafe","the":"the",
+"eau":"eau","eau froide":"eau",
+"vinaigre":"vinaigre","vinaigre balsamique":"vinaigre","vinaigre de vin":"vinaigre","vinaigre de cidre":"vinaigre","vinaigre de vin blanc":"vinaigre","vinaigre de vin rouge":"vinaigre",
+"moutarde":"moutarde","moutarde de dijon":"moutarde",
+"levure":"levure","levure chimique":"levure",
+"potiron":"potiron","potimarron":"potiron","courge":"potiron","patate douce":"patate douce","patates douces":"patate douce",
+"pain":"pain","pain de campagne":"pain","pain pita":"pain","chapelure":"chapelure","chapelure panko":"chapelure","biscotte":"pain",
+"lentille":"lentille","lentilles":"lentille","lentilles corail":"lentille","lentilles vertes":"lentille","lentilles brunes":"lentille",
+"pois chiche":"pois chiche","pois chiches":"pois chiche",
+"haricot":"haricot","haricots":"haricot","haricots noirs":"haricot","haricots rouges":"haricot","haricots blancs":"haricot","haricots verts":"haricots verts","haricots verts":"haricots verts",
+"petit pois":"petit pois","petits pois":"petit pois","pois gourmands":"petit pois",
+"fraise":"fraise","fraises":"fraise","framboise":"framboise","framboises":"framboise","myrtille":"myrtille","myrtilles":"myrtille",
+"pomme":"pomme","pommes":"pomme","poire":"poire","poires":"poire","banane":"banane","bananes":"banane","orange":"orange","oranges":"orange",
+"avocat":"avocat","avocats":"avocat",
+"cannelle":"cannelle","cannelle moulue":"cannelle","baton de cannelle":"cannelle",
+"cumin":"cumin","cumin moulu":"cumin","graines de cumin":"cumin",
+"curry":"curry","curry en poudre":"curry","curry en poudre doux":"curry","poudre de curry":"curry",
+"paprika":"paprika","paprika doux":"paprika","paprika fume":"paprika","paprika moulu":"paprika",
+"curcuma":"curcuma","curcuma moulu":"curcuma","muscade":"muscade","muscade moulue":"muscade",
+"origan":"origan","origan seche":"origan","thym":"thym","thym seche":"thym","thym frais":"thym","romarin":"romarin","romarin frais":"romarin",
+"sauge":"sauge","feuilles de sauge":"sauge","laurier":"laurier","feuille de laurier":"laurier","feuilles de laurier":"laurier",
+"egg":"oeuf","eggs":"oeuf","chicken":"poulet","beef":"boeuf","boeuf":"boeuf","bœuf":"boeuf","porc":"porc","pork":"porc",
+"salt":"sel","pepper":"poivre","sugar":"sucre","flour":"farine","butter":"beurre","milk":"lait","cream":"creme","water":"eau",
+"rice":"riz","pasta":"pate","onion":"oignon","onions":"oignon","garlic":"ail","potato":"pomme de terre","potatoes":"pomme de terre",
+"tomato":"tomate","tomatoes":"tomate","carrot":"carotte","carrots":"carotte","mushroom":"champignon","mushrooms":"champignon",
+"lemon":"citron","lemons":"citron","lime":"citron","olive oil":"huile olive","olive":"olive","olives":"olive",
+"cheese":"fromage","parmesan cheese":"parmesan","cheddar cheese":"fromage","mozzarella cheese":"mozzarella",
+"salmon":"saumon","tuna":"thon","prawn":"crevette","prawns":"crevette","shrimp":"crevette",
+"bread":"pain","breadcrumbs":"chapelure","honey":"miel","chocolate":"chocolat","vanilla":"vanille","cinnamon":"cannelle",
+"cumin seeds":"cumin","ginger":"gingembre","coriander":"coriandre","parsley":"persil","basil":"basilic","mint":"menthe",
+"spinach":"epinard","zucchini":"courgette","eggplant":"aubergine","pepper":"poivron","red pepper":"poivron","green pepper":"poivron","chilli":"piment","chili":"piment",
+"vegetable stock":"bouillon","chicken stock":"bouillon","beef stock":"bouillon","stock":"bouillon","stock cube":"bouillon",
+"baking powder":"levure","bicarbonate of soda":"levure","yeast":"levure",
+"sesame seeds":"sesame","sesame oil":"huile sesame","soy sauce":"sauce soja","sauce soja":"sauce soja",
+"maple syrup":"sirop d'erable","golden syrup":"sirop","treacle":"sirop","molasses":"sirop",
+"black pepper":"poivre","white pepper":"poivre","cayenne":"piment","cayenne pepper":"piment","chilli powder":"piment","chili powder":"piment",
+"bay leaf":"laurier","bay leaves":"laurier","spring onion":"ciboule","spring onions":"ciboule","scallion":"ciboule","scallions":"ciboule","green onion":"ciboule","green onions":"ciboule",
+"red onion":"oignon rouge","red onions":"oignon rouge","white onion":"oignon","yellow onion":"oignon","brown onion":"oignon",
+"red lentils":"lentille","green lentils":"lentille","brown lentils":"lentille","chickpeas":"pois chiche","chickpea":"pois chiche",
+"black beans":"haricot","kidney beans":"haricot","borlotti beans":"haricot","cannellini beans":"haricot","baked beans":"haricot",
+"sweetcorn":"mais","corn":"mais","maïs":"mais","mais":"mais",
+"sweet potato":"patate douce","yam":"patate douce",
+"self-raising flour":"farine","self rising flour":"farine","plain flour":"farine","all purpose flour":"farine","all-purpose flour":"farine","corn flour":"farine","cornstarch":"fecule","cornflour":"fecule","corn flour":"fecule","fécule de maïs":"fecule","fecule":"fecule",
+"caster sugar":"sucre","granulated sugar":"sucre","icing sugar":"sucre","powdered sugar":"sucre","demerara sugar":"sucre","brown sugar":"sucre",
+"olive oil":"huile olive","extra virgin olive oil":"huile olive","vegetable oil":"huile","sunflower oil":"huile","rapeseed oil":"huile","coconut oil":"huile",
+"coconut milk":"lait de coco","coconut cream":"creme de coco","desiccated coconut":"noix de coco",
+"sour cream":"creme","double cream":"creme","heavy cream":"creme","whipping cream":"creme","creme fraiche":"creme",
+"greek yogurt":"yaourt","yogurt":"yaourt","yoghurt":"yaourt","yoghurt":"yaourt",
+"cottage cheese":"fromage blanc","cream cheese":"fromage a tartiner","fromage à tartiner":"fromage a tartiner","fromage blanc":"fromage blanc",
+"smoked salmon":"saumon fume","smoked paprika":"paprika","smoked bacon":"lardon","streaky bacon":"lardon","bacon":"lardon","bacon rashers":"lardon","pancetta":"lardon",
+"sausage":"saucisse","sausages":"saucisse","chicken breast":"poulet","chicken breasts":"poulet","chicken thighs":"poulet","chicken legs":"poulet","whole chicken":"poulet",
+"beef mince":"boeuf hache","boeuf hache":"boeuf hache","minced beef":"boeuf hache","ground beef":"boeuf hache","lamb mince":"agneau hache","pork mince":"porc hache","minced pork":"porc hache","ground pork":"porc hache","ground chicken":"poulet","minced lamb":"agneau hache","agneau":"agneau",
+"vegetable oil":"huile","coconut oil":"huile"
+};
 function normalizeName(n) {
-return n.toLowerCase().replace(/\b(de |du |des |d')/g, "").replace(/\s+/g, " ").trim();
+let k = n.toLowerCase().replace(/\b(de |du |des |d'|le |la |les |l')/g, "").replace(/\s+/g, " ").trim();
+k = k.replace(/^(\d+(?:[.,]\d+)?\s*)+/, "").trim();
+k = k.replace(/^(g|gr|kg|ml|cl|dl|l|litres?|c\.?\s*à\s*[sc.]\.?|tbs|tbsp|tsp|cups?|pinch|pinc[eé]e?s?|gousses?|tranches?|branches?|feuilles?|boîte|can(?:ne)?|sachet|packet)\s+/i, "").trim();
+k = k.replace(/\s*(\d+(?:[.,]\d+)?)\s*(g|gr|kg|ml|cl|dl|l|litres?|lb|oz|tbs|tbsp|tsp|cups?)?$/i, "").trim();
+k = k.replace(/\s+(?:finely )?(?:diced|sliced|chopped|minced|crushed|grated|peeled|mashed|cloves|clove|leaves|sprigs|cubes)$/i, "").trim();
+k = k.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/œ/g, "oe").replace(/æ/g, "ae");
+k = k.replace(/\s+/g, " ").trim();
+if (NAME_SYNONYMS[k]) return NAME_SYNONYMS[k];
+return k;
 }
 function renderIngredients() {
 const el = document.getElementById("ingredientList");
