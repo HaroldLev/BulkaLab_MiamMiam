@@ -99,6 +99,8 @@ ticket-select, .ticket-select{width:100%;border:1px solid var(--border);border-r
 <label>Photo du ticket (optionnel)</label>
 <input type="file" id="ticketPhoto" accept="image/*" capture="environment" onchange="onTicketPhoto(event)" style="padding:8px">
 <img id="ticketPhotoPreview" class="ticket-photo" style="display:none" alt="ticket">
+<button class="btn btn-primary" style="width:100%;margin-top:6px" onclick="scanReceipt()">📷 Scanner le ticket (OCR)</button>
+<div id="scanProgress" class="hint" style="display:none"></div>
 </div>
 <div class="field">
 <label>Magasin</label>
@@ -1045,6 +1047,122 @@ renderFridge();
 
 function realPriceFor(key, storeId) {
 return (userPrices[key] && userPrices[key][storeId]) || null;
+}
+
+
+// ============ OCR TICKET (Tesseract.js) ============
+let tesseractLoaded = false;
+async function loadTesseract() {
+if (tesseractLoaded) return;
+const s = document.createElement("script");
+s.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
+document.head.appendChild(s);
+await new Promise(res => { s.onload = res; s.onerror = res; });
+tesseractLoaded = true;
+}
+
+function setScanProgress(txt) {
+const el = document.getElementById("scanProgress");
+el.style.display = txt ? "" : "none";
+el.textContent = txt || "";
+}
+
+// --- Parser de lignes de ticket FR ---
+// formats gérés :
+//   "POMMES GOLDEN   0,534 kg     2,13"  (au poids)
+//   "2 LAIT 1L       2,78"              (quantité x produit)
+//   "PAIN DE MIE     1,95"               (produit prix)
+//   "0,534 kg * 2,13"                    (variante poids)
+//   "2 x 1,95"                           (promo quantité)
+const STOP_WORDS = /^(total|tva|ticket|carte|cb|espèces|cheque|merci|bonjour|sous.?total|remise|solde|articles?|caisse|client|magasin|adresse|siret|www|http|numero|loyer|consigne|emballage|paiement|montant|rendu|coupon|fidelite|points?|bienvenue)/i;
+function parseReceiptText(text) {
+const lines = text.split(/\n|\r/).map(l => l.trim()).filter(l => l.length > 2);
+const items = [];
+let seenTotal = false;
+let prevLine = "";
+for (const line of lines) {
+if (STOP_WORDS.test(line)) continue;
+if (/^total/i.test(line)) { seenTotal = true; continue; }
+if (seenTotal) continue;
+const priceMatch = line.match(/(\d{1,4})[,.](\d{2})\s*\u20ac?\s*$/);
+if (!priceMatch) { if (!/^\d+[.,]/.test(line)) prevLine = line; continue; }
+const price = parseInt(priceMatch[1]) + parseInt(priceMatch[2]) / 100;
+let rest = line.slice(0, line.length - priceMatch[0].length).trim();
+if (price <= 0 || price > 500) { prevLine = line; continue; }
+// cas poids seul "0,534 kg * 2,13" → nom sur la ligne précédente
+const weightOnly = rest.match(/^(\d+(?:[.,]\d+)?)\s*(kg|g)\s*[*\u00d7]?\s*$/i);
+if (weightOnly) {
+const w = parseFloat(weightOnly[1].replace(",", "."));
+const isKg = weightOnly[2].toLowerCase() === "kg";
+const name = prevLine;
+prevLine = "";
+if (name && name.length > 2 && !/\d{1,4}[,.]\d{2}/.test(name)) {
+items.push({ name, qty: String(isKg ? w : w / 1000), unit: "kg", price });
+continue;
+}
+}
+const weightMatch = rest.match(/(\d+(?:[.,]\d+)?)\s*(kg|g)\s*(?:[*\u00d7])?/i);
+const volMatch = rest.match(/(\d+(?:[.,]\d+)?)\s*(l|cl|ml)\b/i);
+const qtyArticle = rest.match(/^(\d{1,2})\s+(?![,.])(.+)/);
+let name = "", qty = "", unit = "pc";
+if (weightMatch) {
+const w = parseFloat(weightMatch[1].replace(",", "."));
+const isKg = weightMatch[2].toLowerCase() === "kg";
+const stripped = rest.replace(weightMatch[0], "").replace(/[*\u00d7]/g, "").trim();
+name = stripped || prevLine;
+qty = String(isKg ? w : w / 1000);
+unit = "kg";
+} else if (qtyArticle && volMatch) {
+const q = parseInt(qtyArticle[1]);
+const v = parseFloat(volMatch[1].replace(",", "."));
+const vu = volMatch[2].toLowerCase();
+let totalMl = vu === "l" ? v * 1000 : vu === "cl" ? v * 10 : v;
+name = (qtyArticle[2] || "").replace(volMatch[0], "").trim() || rest;
+qty = String(Math.round(totalMl * q));
+unit = "ml";
+} else if (qtyArticle) {
+const q = parseInt(qtyArticle[1]);
+name = (qtyArticle[2] || "").trim();
+if (q >= 1 && q <= 20) { qty = String(q); unit = "pc"; }
+else { name = rest; }
+} else if (volMatch) {
+const v = parseFloat(volMatch[1].replace(",", "."));
+const vu = volMatch[2].toLowerCase();
+name = rest.replace(volMatch[0], "").trim() || rest;
+qty = String(vu === "l" ? Math.round(v * 1000) : vu === "cl" ? Math.round(v * 10) : Math.round(v));
+unit = "ml";
+} else {
+name = rest;
+}
+prevLine = line;
+if (!name || name.length < 2) continue;
+name = name.replace(/\s{2,}/g, " ").replace(/^[-*\u2022]+\s*/, "").replace(/\s*[x\u00d7]\s*\d+\s*$/i, "").trim();
+items.push({ name, qty, unit, price });
+}
+return items;
+}
+
+async function scanReceipt() {
+if (!ticketPhotoData) { alert("Prends d'abord une photo du ticket."); return; }
+setScanProgress("Chargement du moteur OCR (une fois)...");
+try {
+await loadTesseract();
+setScanProgress("Analyse du ticket... (10-30 s)");
+const worker = await Tesseract.createWorker("fra");
+const result = await worker.recognize(ticketPhotoData);
+await worker.terminate();
+const text = result.data.text || "";
+const items = parseReceiptText(text);
+document.getElementById("ticketLines").innerHTML = "";
+if (items.length === 0) {
+setScanProgress("Aucun produit reconnu. Vérifie la photo (netteté, lumière) ou saisis à la main.");
+return;
+}
+for (const it of items) addTicketLine({ name: it.name, qty: it.qty, unit: it.unit, price: it.price });
+setScanProgress("✅ " + items.length + " produit(s) détecté(s) — vérifie et corrige les lignes, puis enregistre.");
+} catch (e) {
+setScanProgress("Erreur OCR : " + (e && e.message ? e.message.slice(0, 80) : "inconnue") + ". Saisis à la main.");
+}
 }
 
 // ============ PARAMÈTRES : SOURCES DE DONNÉES ============
