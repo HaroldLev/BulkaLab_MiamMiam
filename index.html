@@ -87,7 +87,7 @@ header h1{font-size:22px;font-weight:700}.tabs{display:flex;gap:8px;margin-top:1
 <div id="dbSources"></div>
 <div class="hint" style="margin-top:8px">Les suggestions et la recherche ne piocheront que dans les bases sélectionnées.</div>
 <div class="section-title">À propos</div>
-<div style="font-size:13px;color:var(--muted);line-height:1.6">MiamMiam v<span id="settingsVersion"></span> — 1201 recettes disponibles.<br>Sources : TheMealDB · METRO France (metro.fr, CC-BY 4.0).<br>Tes recettes et ta liste restent enregistrées sur ton appareil.</div>
+<div style="font-size:13px;color:var(--muted);line-height:1.6">MiamMiam v<span id="settingsVersion"></span> — 1630 recettes disponibles.<br>Sources : TheMealDB · METRO France (CC-BY 4.0) · Marmiton (usage personnel).<br>Tes recettes et ta liste restent enregistrées sur ton appareil.</div>
 <div class="modal-actions">
 <button class="btn btn-primary" onclick="closeSettings()">Fermer</button>
 </div>
@@ -182,7 +182,7 @@ Recettes : TheMealDB + Données METRO France (metro.fr) – CC-BY 4.0
 </div>
 </div>
 </div>
-<script>const APP_VERSION = "1.9.0";
+<script>const APP_VERSION = "1.10.0";
 const DEFAULT_RECIPES = [];
 function loadJson(key, fallback) {
 try {
@@ -626,7 +626,7 @@ return `<div class="result-card" data-id="${safeId(m.idMeal)}" onclick="pickMeal
 ${m.strMealThumb ? `<img src="${safeImgUrl(m.strMealThumb)}" alt="" loading="lazy">` : `<span class="result-emoji">${escapeHtml(m.strEmoji || "🍽️")}</span>`}
 <div style="flex:1">
 <div class="result-name">${escapeHtml(mealNameFr(m))}</div>
-<div class="result-meta">${m.strChef ? "Chef " + escapeHtml(m.strChef) : (escapeHtml(catFr(m.strCategory || "")) + (m.strArea ? " · " + escapeHtml(areaFr(m.strArea)) : ""))}${m.strDuration ? " · " + escapeHtml(m.strDuration) : ""}${m.source === "metro" ? " · 🧪" : ""}</div>
+<div class="result-meta">${m.strChef ? "Chef " + escapeHtml(m.strChef) : (escapeHtml(catFr(m.strCategory || "")) + (m.strArea ? " · " + escapeHtml(areaFr(m.strArea)) : ""))}${m.strDuration ? " · " + escapeHtml(m.strDuration) : ""}${m._rating ? " · ⭐" + m._rating : ""}${m.source === "metro" ? " · 🧪" : ""}</div>
 </div>
 </div>`;
 }
@@ -666,6 +666,7 @@ ui._measures = m.measures;
 ui._db = true;
 ui._nameFr = m.nameFr || m.name || null;
 ui.source = m.source || "themealdb";
+ui._rating = m.rating || 0;
 ui._ingLines = m.ingLines || [];
 ui.servings = m.servings || 4;
 ui.strChef = m.chef || "";
@@ -817,7 +818,8 @@ return String(s).replace(/&/g, "&amp;").replace(/'/g, "&#39;").replace(/"/g, "&q
 // ============ PARAMÈTRES : SOURCES DE DONNÉES ============
 const DB_SOURCES = [
 { id: "metro", name: "METRO — Recettes de chefs", emoji: "🧪", sub: "411 recettes françaises de chefs professionnels (portions réelles, étapes détaillées)" },
-{ id: "themealdb", name: "TheMealDB — Cuisine du monde", emoji: "🌍", sub: "790 recettes internationales avec photos" }
+{ id: "themealdb", name: "TheMealDB — Cuisine du monde", emoji: "🌍", sub: "790 recettes internationales avec photos" },
+{ id: "marmiton", name: "Marmiton — Classiques français", emoji: "🍽️", sub: "429 classiques de la cuisine française notés par les internautes (usage personnel)" }
 ];
 let activeSources = loadJson("dbSources", null);
 if (!Array.isArray(activeSources) || activeSources.length === 0) {
