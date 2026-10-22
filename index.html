@@ -372,13 +372,13 @@ Main: ["Chicken", "Beef", "Pork", "Seafood", "Fish", "Lamb", "Goat", "Pasta", "V
 Dessert: ["Dessert"]
 };
 const AREA_GROUPS = {
-"Europe du Sud": ["Italian", "Spanish", "French", "Greek", "Portuguese", "Croatian", "Malaysian"],
-"Europe du Nord": ["British", "Irish", "Dutch", "Polish", "Russian"],
-"Europe de l'Est": ["Polish", "Russian", "Croatian"],
-"Asie": ["Chinese", "Japanese", "Thai", "Vietnamese", "Indian", "Malaysian", "Turkish"],
-"Amérique du Nord": ["American", "Canadian", "Jamaican"],
-"Amérique du Sud": ["Mexican", "Brazilian", "Cuban", "Peruvian"],
-"Afrique / Moyen-Orient": ["Moroccan", "Tunisian", "Egyptian", "Kenyan", "Syrian"]
+"Europe du Sud": ["Italian", "Spanish", "French", "Greek", "Portuguese", "Croatian"],
+"Europe du Nord": ["British", "Irish", "Netherlands", "Norway", "Polish", "Slovakia", "Russian", "Ukrainian"],
+"Asie": ["Chinese", "Japanese", "Thai", "Vietnamese", "Indian", "Malaysian", "Filipino", "Saudi Arabian", "Turkish"],
+"Amérique du Nord": ["United States", "Canadian", "Jamaican"],
+"Amérique du Sud": ["Mexican", "Argentine", "Uruguayan", "Venezuelan"],
+"Afrique / Moyen-Orient": ["Moroccan", "Tunisian", "Egyptian", "Kenyan", "Algerian", "Syrian"],
+"Océanie": ["Australian"]
 };
 const AREA_GROUP_FR = {
 "Europe du Sud": "Europe du Sud", "Europe du Nord": "Europe du Nord", "Europe de l'Est": "Europe de l'Est",
@@ -389,13 +389,13 @@ let currentType = null;
 let currentArea = null;
 const AREA_META = {
 "Toutes": { emoji: "🌍", sub: "Toutes les cuisines" },
-"Europe du Sud": { emoji: "🫒", sub: "Italienne, française, espagnole, grecque..." },
-"Europe du Nord": { emoji: "🥔", sub: "Britannique, irlandaise, néerlandaise" },
-"Europe de l'Est": { emoji: "🥟", sub: "Polonaise, russe, croate" },
-"Asie": { emoji: "🍜", sub: "Chinoise, japonaise, thaï, indienne..." },
-"Amérique du Nord": { emoji: "🍔", sub: "Américaine, canadienne" },
-"Amérique du Sud": { emoji: "🌮", sub: "Mexicaine, brésilienne, péruvienne" },
-"Afrique / Moyen-Orient": { emoji: "🍢", sub: "Marocaine, tunisienne, égyptienne" }
+"Europe du Sud": { emoji: "🫒", sub: "Italienne, française, espagnole, grecque" },
+"Europe du Nord": { emoji: "🥔", sub: "Britannique, irlandaise, polonaise, russe..." },
+"Asie": { emoji: "🍜", sub: "Chinoise, japonaise, thaï, indienne, turque..." },
+"Amérique du Nord": { emoji: "🍔", sub: "Américaine, canadienne, jamaïcaine" },
+"Amérique du Sud": { emoji: "🌮", sub: "Mexicaine, argentine, uruguayenne" },
+"Afrique / Moyen-Orient": { emoji: "🍢", sub: "Marocaine, tunisienne, égyptienne" },
+"Océanie": { emoji: "🦘", sub: "Australienne" }
 };
 function chooseType(t) {
 currentType = t;
@@ -449,20 +449,12 @@ return Array.isArray(group) && group.includes(m.strArea);
 async function showSuggestions() {
 const res = document.getElementById("searchResults");
 res.innerHTML = `<div class="loading">Suggestions...</div>`;
-try {
-const meals = [];
-const seen = new Set();
-let tries = 0;
-while (meals.length < 5 && tries < 25) {
-tries++;
-const r = await fetch("https://www.themealdb.com/api/json/v1/1/random.php");
-const data = await r.json();
-const m = data.meals && data.meals[0];
-if (m && !seen.has(m.idMeal) && mealMatchesType(m) && mealMatchesArea(m)) {
-seen.add(m.idMeal);
-meals.push(m);
+await loadDB();
+if (!DB.meals || DB.meals.length === 0) {
+res.innerHTML = `<div class="loading">Base de recettes introuvable.</div>`;
+return;
 }
-}
+const meals = pickRandomDb(5);
 if (meals.length === 0) {
 res.innerHTML = `<div class="loading">Pas de recette trouvée pour ce filtre.</div>`;
 return;
@@ -474,9 +466,6 @@ window._mealsCache[safeId(m.idMeal)] = m;
 html += resultCardHtml(m);
 });
 res.innerHTML = html;
-} catch (e) {
-res.innerHTML = `<div class="loading">Erreur réseau.</div>`;
-}
 }
 function resultCardHtml(m) {
 return `<div class="result-card" data-id="${safeId(m.idMeal)}" onclick="pickMeal('${safeId(m.idMeal)}')">
@@ -486,6 +475,61 @@ return `<div class="result-card" data-id="${safeId(m.idMeal)}" onclick="pickMeal
 <div class="result-meta">${escapeHtml(catFr(m.strCategory || ""))}${m.strArea ? " · " + escapeHtml(areaFr(m.strArea)) : ""}</div>
 </div>
 </div>`;
+}
+
+
+// ============ BASE DE RECETTES LOCALE (db.json) ============
+const DB = { meals: null, loaded: false };
+async function loadDB() {
+if (DB.loaded) return;
+try {
+const r = await fetch("db.json");
+DB.meals = await r.json();
+DB.loaded = true;
+} catch (e) {
+DB.meals = [];
+DB.loaded = true;
+}
+}
+// normalise un repas local au format attendu par l'UI
+function dbMealToUi(m) {
+if (m._ui) return m._ui;
+const ui = {};
+ui.idMeal = m.id;
+ui.strMeal = m.name;
+ui.strCategory = m.cat;
+ui.strArea = m.area || "";
+ui.strMealThumb = m.img;
+ui.strInstructions = m.instructions || "";
+ui._ingredients = m.ingredients;
+ui._measures = m.measures;
+for (let i = 0; i < m.ingredients.length; i++) {
+ui["strIngredient" + (i+1)] = m.ingredients[i];
+ui["strMeasure" + (i+1)] = m.measures[i] || "";
+}
+m._ui = ui;
+return ui;
+}
+function mealMatchesTypeDb(m) {
+if (!currentType) return true;
+return TYPE_TO_CATS[currentType].includes(m.cat);
+}
+function mealMatchesAreaDb(m) {
+if (!currentArea) return true;
+const group = AREA_GROUPS[currentArea];
+return Array.isArray(group) && group.includes(m.area);
+}
+function pickRandomDb(count) {
+const pool = DB.meals.filter(m => mealMatchesTypeDb(m) && mealMatchesAreaDb(m));
+const out = [];
+const seen = new Set();
+while (out.length < count && pool.length > 0) {
+const idx = Math.floor(Math.random() * pool.length);
+const m = pool[idx];
+if (!seen.has(m.id)) { seen.add(m.id); out.push(dbMealToUi(m)); }
+if (seen.size >= pool.length) break;
+}
+return out;
 }
 
 let searchTimer = null;
@@ -499,28 +543,27 @@ searchTimer = setTimeout(() => searchMeals(q), 400);
 }
 async function searchMeals(q) {
 const res = document.getElementById("searchResults");
-try {
-let data;
-if (q) {
-const r = await fetch(`https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(q)}`);
-data = await r.json();
-}
-if (!data || !data.meals) {
-res.innerHTML = `<div class="loading">Rien trouvé pour « ${escapeHtml(q)} ». Essaie en anglais (ex : chicken, tart, soup).</div>`;
+await loadDB();
+if (!DB.meals) { res.innerHTML = `<div class="loading">Base introuvable.</div>`; return; }
+const needle = q.toLowerCase().trim();
+const words = needle.split(/\s+/);
+const matches = DB.meals.filter(m => {
+if (!mealMatchesTypeDb(m) || !mealMatchesAreaDb(m)) return false;
+const hay = (m.name + " " + (m.nameFr || "") + " " + m.ingredients.join(" ")).toLowerCase();
+return words.every(w => hay.includes(w));
+}).slice(0, 8);
+if (matches.length === 0) {
+res.innerHTML = `<div class="loading">Rien trouvé pour « ${escapeHtml(q)} ». Essaie un autre mot.</div>`;
 return;
 }
-window._mealsCache = {};
+if (!window._mealsCache) window._mealsCache = {};
 let html = "";
-const filtered = data.meals.filter(m => mealMatchesType(m) && mealMatchesArea(m)).slice(0, 8);
-filtered.forEach(m => {
-window._mealsCache[safeId(m.idMeal)] = m;
-html += resultCardHtml(m);
+matches.forEach(m => {
+const ui = dbMealToUi(m);
+window._mealsCache[safeId(ui.idMeal)] = ui;
+html += resultCardHtml(ui);
 });
-if (filtered.length === 0) html = `<div class="loading">Rien trouvé pour ce filtre.</div>`;
 res.innerHTML = html;
-} catch (e) {
-res.innerHTML = `<div class="loading">Erreur réseau.</div>`;
-}
 }
 const MEAL_NAMES_FR = {
 "Spicy Arrabiata Penne":"Pennes arrabiata épicées","Chicken Handi":"Poulet Handi","Chicken Enchilada":"Enchiladas de poulet",
@@ -562,6 +605,7 @@ document.getElementById("searchResults").innerHTML = "";
 document.getElementById("fName").value = "";
 document.getElementById("fIngredients").value = "";
 document.getElementById("modalBg").classList.add("open");
+loadDB();
 }
 function closeModal() {
 document.getElementById("modalBg").classList.remove("open");
