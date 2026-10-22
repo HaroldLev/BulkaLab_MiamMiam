@@ -63,6 +63,8 @@ ticket-select, .ticket-select{width:100%;border:1px solid var(--border);border-r
 .th-info b{font-size:13px;color:var(--text)}
 .th-del{border:none;background:none;color:#d33;font-size:17px;cursor:pointer}
 .fridge-item{display:flex;gap:10px;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.fridge-item img{width:36px;height:36px;border-radius:50%;background:#f7f5f2;object-fit:cover;flex-shrink:0}
+.fridge-item .di-ph{width:36px;height:36px;border-radius:50%;background:#fff4f0;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
 .fridge-item .fi-qty{font-weight:700;font-size:15px;white-space:nowrap}
 .fridge-item .fi-date{font-size:11px;color:var(--muted)}
 .fridge-item .fi-del{border:none;background:none;color:#d33;font-size:17px;cursor:pointer;padding:4px}
@@ -236,7 +238,7 @@ Recettes : TheMealDB + Données METRO France (metro.fr) – CC-BY 4.0
 </div>
 </div>
 </div>
-<script>const APP_VERSION = "1.14.0";
+<script>const APP_VERSION = "1.15.0";
 const GEMINI_KEY = ["AQ.", "Ab8RN6LNj_qwe", "HzNsF3YVNdjcN4", "P0l2Xqs_8U7", "GGxPOtmGZj2Q"].join("");
 const GEMINI_MODEL = "gemini-3.5-flash";
 const DEFAULT_RECIPES = [];
@@ -896,12 +898,29 @@ for (const s of STORES) h += `<option value="${s.id}">${s.emoji} ${s.name}</opti
 sel.innerHTML = h;
 }
 
+let ticketPhotoThumb = null;
+function compressPhoto(dataUrl, maxDim, quality) {
+return new Promise(resolve => {
+const img = new Image();
+img.onload = () => {
+const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+const c = document.createElement("canvas");
+c.width = Math.round(img.width * scale);
+c.height = Math.round(img.height * scale);
+c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+resolve(c.toDataURL("image/jpeg", quality));
+};
+img.onerror = () => resolve(dataUrl);
+img.src = dataUrl;
+});
+}
 function onTicketPhoto(ev) {
 const f = ev.target.files && ev.target.files[0];
 if (!f) return;
 const reader = new FileReader();
-reader.onload = e => {
+reader.onload = async e => {
 ticketPhotoData = e.target.result;
+ticketPhotoThumb = await compressPhoto(ticketPhotoData, 320, 0.6);
 const img = document.getElementById("ticketPhotoPreview");
 img.src = ticketPhotoData;
 img.style.display = "";
@@ -968,18 +987,34 @@ userPrices[key][storeId] = { price: Math.round(pricePerBase * 100) / 100, per: n
 }
 }
 if (items.length === 0) { alert("Ajoute au moins un produit avec un prix."); return; }
-tickets.unshift({ id: "T" + Date.now(), storeId, photo: ticketPhotoData, items, total: Math.round(total * 100) / 100, date: Date.now() });
+tickets.unshift({ id: "T" + Date.now(), storeId, photo: ticketPhotoThumb || null, items, total: Math.round(total * 100) / 100, date: Date.now() });
 for (const it of items) {
 if (it.qty == null) continue;
 addFridgeItem(it.key, it.name, it.qty, it.basis, "ticket");
 }
+let savedOk = false;
+try { saveTicketData(); savedOk = true; } catch (e) {
+savedOk = false;
+}
+if (!savedOk) {
+try {
+for (const t of tickets) t.photo = null;
+for (const f2 of fridge) delete f2.photo;
 saveTicketData();
+savedOk = true;
+alert("M\u00e9moire pleine : ticket enregistr\u00e9 sans les photos. Supprime d'anciens tickets si besoin.");
+} catch (e2) {
+alert("M\u00e9moire pleine : impossible d'enregistrer. Supprime des tickets ou vidange le frigo.");
+return;
+}
+}
 renderTickets();
 renderFridge();
 document.getElementById("ticketLines").innerHTML = "";
 document.getElementById("ticketPhoto").value = "";
 document.getElementById("ticketPhotoPreview").style.display = "none";
 ticketPhotoData = null;
+ticketPhotoThumb = null;
 alert(`Ticket enregistré : ${items.length} produit(s), ${total.toFixed(2)} €. Frigo et prix réels mis à jour !`);
 }
 
