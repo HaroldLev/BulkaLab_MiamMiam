@@ -9,7 +9,7 @@ Un seul fichier applicatif : `index.html` (HTML+CSS+JS vanilla, ~200 Ko, aucune 
 
 ## Règles d'or du développement
 1. **Toujours tester avant de pousser** : `node -e "const js = require('fs').readFileSync('index.html','utf8').match(/<script>([\s\S]*)<\/script>/)[1]; new Function(js);"` doit afficher SYNTAX OK. Puis un test fonctionnel avec un harnais (voir section Tests). Si db.json modifié : `node -e "JSON.parse(require('fs').readFileSync('db.json','utf8'))"`.
-2. **Version bump à chaque déploiement** : incrémenter `APP_VERSION` (actuellement 1.19.0, ligne ~272). Elle sert d'anti-cache (`db.json?v=` + version).
+2. **Version bump à chaque déploiement** : incrémenter `APP_VERSION` (actuellement 1.20.0, ligne ~272). Elle sert d'anti-cache (`db.json?v=` + version).
 3. **Déployer** : commit sur `main` → GitHub Pages rebuild automatiquement (~1-2 min). Vérifier avec `gh api repos/HaroldLev/BulkaLab_MiamMiam/pages/builds/latest --jq '.status'` = "built".
 4. **L'utilisateur recharge depuis son iPhone** : le user doit tuer l'app dans le multitâche et rouvrir pour voir la nouvelle version.
 
@@ -18,7 +18,7 @@ Un seul fichier applicatif : `index.html` (HTML+CSS+JS vanilla, ~200 Ko, aucune 
 
 1. **Modif du code** (index.html et/ou db.json)
 2. **Tests** : syntaxe JS (`new Function(js)`) + JSON si db.json modifié
-3. **Bump APP_VERSION** : ex `1.19.0` → `1.20.0` (ligne ~272 de index.html)
+3. **Bump APP_VERSION** : ex `1.20.0` → `1.21.0` (ligne ~272 de index.html)
 4. **Commit** avec message descriptif se terminant par `- vX.Y.Z`
 5. **Créer le tag** : `git tag vX.Y.Z` (ex: `git tag v1.17.0`)
 6. **Push branche + tag** : `git push origin main && git push origin vX.Y.Z`
@@ -106,6 +106,7 @@ const mod = eval('(function(){' + js + '; return { fonctionsATester };})()');
 - Recettes METRO : licence CC-BY 4.0, l'attribution est dans le footer de l'app — **ne pas la retirer**.
 
 ## Historique des versions
+- 1.20.0 : icône = photo du chat (crop carré centré sur le visage, icon-192/512 + apple-touch-icon)
 - 1.19.0 : renommage app en MiamMiam (titre, header, meta) + icône chat kawaii (favicon, apple-touch-icon, manifest.json)
 - 1.16.0 : bouton Contact/Report (mailto pré-rempli avec version)
 - 1.15.0 : fix enregistrement ticket (compression photo, quota localStorage), images frigo 36px
