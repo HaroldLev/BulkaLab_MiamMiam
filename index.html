@@ -75,6 +75,7 @@ ticket-select, .ticket-select{width:100%;border:1px solid var(--border);border-r
 <header>
 <div style="display:flex;align-items:center;justify-content:space-between">
 <h1>🍽️ Mes Recettes</h1>
+<button class="settings-btn" onclick="openFeedback()" title="Contact / Report">💬</button>
 <button class="settings-btn" onclick="openSettings()" title="Paramètres">⚙️</button>
 </div>
 <div class="tabs">
@@ -134,6 +135,29 @@ ticket-select, .ticket-select{width:100%;border:1px solid var(--border);border-r
 <div class="modal-bg" id="detailModalBg" onclick="if(event.target===this)closeDetail()">
 <div class="modal">
 <div id="detailContent"></div>
+</div>
+</div>
+<div class="modal-bg" id="feedbackModalBg" onclick="if(event.target===this)closeFeedback()">
+<div class="modal" style="max-width:520px">
+<h2>💬 Contact / Signaler un bug</h2>
+<div class="field">
+<label>Type de message</label>
+<select id="fbType" class="ticket-select">
+<option value="Suggestion">💡 Suggestion</option>
+<option value="Bug">🐛 Bug</option>
+<option value="Question">❓ Question</option>
+<option value="Autre">📝 Autre</option>
+</select>
+</div>
+<div class="field">
+<label>Message</label>
+<textarea id="fbMessage" placeholder="Décris ta suggestion, le bug rencontré (ce que tu faisais, ce qui s'est affiché)..."></textarea>
+</div>
+<div class="hint">Ton message s'ouvre dans ta app Mail pré-remplie — il ne part que si tu l'envoies.</div>
+<div class="modal-actions">
+<button class="btn btn-secondary" onclick="closeFeedback()">Annuler</button>
+<button class="btn btn-primary" onclick="sendFeedback()">📩 Envoyer</button>
+</div>
 </div>
 </div>
 <div class="modal-bg" id="settingsModalBg" onclick="if(event.target===this)closeSettings()">
@@ -238,7 +262,7 @@ Recettes : TheMealDB + Données METRO France (metro.fr) – CC-BY 4.0
 </div>
 </div>
 </div>
-<script>const APP_VERSION = "1.15.0";
+<script>const APP_VERSION = "1.16.0";
 const GEMINI_KEY = ["AQ.", "Ab8RN6LNj_qwe", "HzNsF3YVNdjcN4", "P0l2Xqs_8U7", "GGxPOtmGZj2Q"].join("");
 const GEMINI_MODEL = "gemini-3.5-flash";
 const DEFAULT_RECIPES = [];
@@ -1279,6 +1303,27 @@ return;
 console.log("Tesseract KO:", e2.message);
 }
 setScanProgress("Aucune analyse réussie. Améliore la photo ou saisis à la main.");
+}
+
+
+// ============ CONTACT / FEEDBACK ============
+function openFeedback() {
+document.getElementById("fbType").value = "Suggestion";
+document.getElementById("fbMessage").value = "";
+document.getElementById("feedbackModalBg").classList.add("open");
+}
+function closeFeedback() {
+document.getElementById("feedbackModalBg").classList.remove("open");
+}
+function sendFeedback() {
+const type = document.getElementById("fbType").value;
+const msg = document.getElementById("fbMessage").value.trim();
+if (!msg) { alert("Écris ton message d'abord."); return; }
+const subject = "[MiamMiam] " + type + " (v" + APP_VERSION + ")";
+const body = msg + "\n\n---\nEnvoyé depuis MiamMiam v" + APP_VERSION;
+const mailto = "mailto:harold.levrat%2Bmiammiam@gmail.com?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+window.location.href = mailto;
+closeFeedback();
 }
 
 // ============ PARAMÈTRES : SOURCES DE DONNÉES ============
