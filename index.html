@@ -113,6 +113,10 @@
 <button type="button" class="back-btn" onclick="backToType()">← Changer de type</button>
 </div>
 <div id="step3" style="display:none">
+<div class="sugg-header" style="margin-bottom:2px">
+<span id="suggStatus" class="result-hint">Prêt</span>
+<button type="button" class="refresh-btn" onclick="showSuggestions()" title="Autres suggestions">🔄</button>
+</div>
 <div class="field" style="margin-bottom:6px">
 <label>Chercher une recette</label>
 <input id="fSearch" placeholder="tarte, poulet, curry..." autocomplete="off" oninput="onSearchInput()">
@@ -146,7 +150,7 @@
 </div>
 </div>
 </div>
-<script>const APP_VERSION = "1.5.0";
+<script>const APP_VERSION = "1.6.0";
 const DEFAULT_RECIPES = [];
 function loadJson(key, fallback) {
 try {
@@ -452,24 +456,30 @@ return Array.isArray(group) && group.includes(m.strArea);
 }
 async function showSuggestions() {
 const res = document.getElementById("searchResults");
-res.innerHTML = `<div class="loading">Suggestions...</div>`;
+const status = document.getElementById("suggStatus");
+if (status) status.textContent = "Chargement...";
+res.innerHTML = "";
 await loadDB();
-if (!DB.meals || DB.meals.length === 0) {
-res.innerHTML = `<div class="loading">Base de recettes introuvable.</div>`;
+const n = DB.meals ? DB.meals.length : 0;
+if (n === 0) {
+if (status) status.textContent = "Erreur : base vide";
+res.innerHTML = `<div class="loading">Impossible de charger les recettes. Vérifie ta connexion.</div>`;
 return;
 }
 const meals = pickRandomDb(5);
 if (meals.length === 0) {
+if (status) status.textContent = "Aucune recette pour ce filtre";
 res.innerHTML = `<div class="loading">Pas de recette trouvée pour ce filtre.</div>`;
 return;
 }
 if (!window._mealsCache) window._mealsCache = {};
-let html = `<div class="sugg-header"><span class="result-hint">Suggestions ${TYPE_LABELS[currentType] ? "« " + TYPE_LABELS[currentType] + " »" : ""}${currentArea ? " · " + currentArea : ""}</span><button type="button" class="refresh-btn" onclick="showSuggestions()" title="Autres suggestions">🔄</button></div>`;
+let html = "";
 meals.forEach(m => {
 window._mealsCache[safeId(m.idMeal)] = m;
 html += resultCardHtml(m);
 });
 res.innerHTML = html;
+if (status) status.textContent = `Suggestions ${TYPE_LABELS[currentType] ? "« " + TYPE_LABELS[currentType] + " »" : ""}${currentArea ? " · " + currentArea : ""} (${n} recettes)`;
 }
 function resultCardHtml(m) {
 return `<div class="result-card" data-id="${safeId(m.idMeal)}" onclick="pickMeal('${safeId(m.idMeal)}')">
