@@ -99,7 +99,8 @@ ticket-select, .ticket-select{width:100%;border:1px solid var(--border);border-r
 <div class="section-title">À acheter</div>
 <div id="ingredientList"></div>
 <button class="btn btn-secondary" style="width:100%; margin-top:10px;" onclick="clearChecked()">Décocher tout</button>
-<button class="btn btn-secondary" style="width:100%; margin-top:10px;" onclick="checkAgainstFridge()">🧊 Vérifier mon frigo</button>
+<button class="btn btn-secondary" id="btnCheckFridge" style="width:100%; margin-top:10px;" onclick="checkAgainstFridge()">🧊 Vérifier mon frigo</button>
+<div class="hint" style="text-align:center">Matching intelligent par IA, repli sur les synonymes locaux si hors-ligne.</div>
 <button class="btn btn-primary" style="width:100%; margin-top:10px;" onclick="openPriceModal()">💰 Estimer le prix du panier</button>
 </main>
 <main id="viewTicket" class="hidden">
@@ -273,7 +274,7 @@ Recettes : TheMealDB + Données METRO France (metro.fr) – CC-BY 4.0
 </div>
 </div>
 </div>
-<script>const APP_VERSION = "1.22.0";
+<script>const APP_VERSION = "1.23.0";
 const GEMINI_KEY = ["AQ.", "Ab8RN6LNj_qwe", "HzNsF3YVNdjcN4", "P0l2Xqs_8U7", "GGxPOtmGZj2Q"].join("");
 const GEMINI_MODEL = "gemini-3.5-flash";
 const DEFAULT_RECIPES = [];
@@ -523,6 +524,7 @@ return k;
 function renderIngredients() {
 const el = document.getElementById("ingredientList");
 const items = buildAggregated();
+const aiMap = activeAiMap(items);
 el.innerHTML = items.length === 0
 ? `<div class="empty">Coche des recettes pour générer ta liste.</div>`
 : items.map((it, idx) => {
@@ -531,7 +533,7 @@ const label = it.qty != null ? `${formatQty(it.qty, it.unit)}${de}${it.name}` : 
 const detail = it.units.length && it.qty != null ? it.units.join(" ; ") : "";
 const key = "ing:" + idx;
 const ck = checkedItems.includes(key);
-const stock = fridgeStockFor(it);
+const stock = fridgeStockFor(it, aiMap);
 const badge = stock == null ? "" : stock.full
 ? `<span class="stock-badge full">🧊 en stock${stock.txt ? " (" + escapeHtml(stock.txt) + ")" : ""}</span>`
 : `<span class="stock-badge partial">🧊 partiel${stock.txt ? " (" + escapeHtml(stock.txt) + ")" : ""}</span>`;
@@ -565,10 +567,23 @@ renderRecipes();
 showTab("recipes");
 }
 const PIECE_G = { tomate: 150, "pomme de terre": 200, oignon: 150, carotte: 120, poivron: 200, courgette: 300, aubergine: 300, pomme: 180, citron: 120, orange: 200, banane: 120, concombre: 400, "patate douce": 250 };
-function fridgeStockFor(it) {
+let fridgeAiMap = null;
+let fridgeAiSig = null;
+try {
+const _fm = loadJson("fridgeMatch", null);
+if (_fm && _fm.sig && _fm.map) { fridgeAiSig = _fm.sig; fridgeAiMap = _fm.map; }
+} catch (e) {}
+function fridgeMatchSig(items) {
+return items.map(i => i.name).sort().join("|") + "#" + fridge.map(f => f.name).sort().join("|");
+}
+function activeAiMap(items) {
+return (fridgeAiMap && fridgeAiSig && fridgeAiSig === fridgeMatchSig(items)) ? fridgeAiMap : null;
+}
+function fridgeStockFor(it, aiMap) {
 if (!fridge.length) return null;
 const key = normalizeName(it.name);
-const rows = fridge.filter(f => f.key === key);
+const aiNames = aiMap && Array.isArray(aiMap[it.name]) ? aiMap[it.name] : null;
+const rows = fridge.filter(f => f.key === key || (aiNames && aiNames.includes(f.name)));
 if (!rows.length) return null;
 const needG = it.qty != null && it.unit === "g" ? it.qty : null;
 const needMl = it.qty != null && it.unit === "l" ? it.qty * 1000 : null;
@@ -597,21 +612,61 @@ if (havePc >= needPc || haveG >= needPc * (PIECE_G[key] || 150) || haveMl >= nee
 }
 return null;
 }
-function checkAgainstFridge() {
+async function matchWithGemini(listNames, fridgeNames) {
+const prompt = "Tu es un assistant de courses. Deux listes de produits alimentaires :\n"
++ "LISTE A (liste de courses) : " + JSON.stringify(listNames) + "\n"
++ "LISTE B (contenu du frigo) : " + JSON.stringify(fridgeNames) + "\n"
++ "Pour chaque produit de la LISTE A, indique les produits de la LISTE B qui correspondent au même aliment "
++ "(synonymes, variantes, pluriel/singulier, marques, FR/EN). N'invente rien : aucune correspondance = tableau vide. "
++ "Réponds UNIQUEMENT avec un JSON valide, sans markdown ni texte autour :\n"
++ '{"matches":{"<nom exact de A>":["<nom exact de B>"]}}';
+const r = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + GEMINI_MODEL + ":generateContent?key=" + GEMINI_KEY, {
+method: "POST",
+headers: { "Content-Type": "application/json" },
+body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+});
+if (r.status === 503) throw new Error("surcharge");
+if (!r.ok) throw new Error("API " + r.status);
+const data = await r.json();
+const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+const parsed = extractJson(text);
+if (!parsed || !parsed.matches || typeof parsed.matches !== "object") throw new Error("JSON invalide");
+return parsed.matches;
+}
+async function checkAgainstFridge() {
 const items = buildAggregated();
 if (!items.length) { alert("Ta liste est vide. Coche d'abord des recettes."); return; }
 if (!fridge.length) { alert("Ton frigo est vide : ajoute des produits via un ticket ou à la main."); return; }
+const sig = fridgeMatchSig(items);
+let aiMap = null, source = "local";
+const cached = activeAiMap(items);
+if (cached) { aiMap = cached; source = "cache"; }
+else {
+const btn = document.getElementById("btnCheckFridge");
+if (btn) { btn.disabled = true; btn.textContent = "🧊 Analyse IA en cours..."; }
+try {
+aiMap = await matchWithGemini(items.map(i => i.name).slice(0, 60), fridge.map(f => f.name).slice(0, 80));
+fridgeAiMap = aiMap; fridgeAiSig = sig;
+try { localStorage.setItem("fridgeMatch", JSON.stringify({ sig, map: aiMap })); } catch (e) {}
+source = "IA";
+} catch (e) {
+console.log("Gemini matching KO:", e.message);
+aiMap = null;
+source = "local (IA indisponible)";
+}
+if (btn) { btn.disabled = false; btn.textContent = "🧊 Vérifier mon frigo"; }
+}
 let covered = 0, partial = 0;
 items.forEach((it, idx) => {
-const s = fridgeStockFor(it);
+const s = fridgeStockFor(it, aiMap);
 if (!s) return;
 if (s.full) { covered++; if (!checkedItems.includes("ing:" + idx)) checkedItems.push("ing:" + idx); }
 else partial++;
 });
 save();
 renderIngredients();
-if (covered === 0 && partial === 0) alert("Aucun ingrédient de ta liste n'est dans ton frigo.");
-else alert(`Frigo vérifié : ${covered} ingrédient(s) déjà en stock (cochés), ${partial} partiel(s) à compléter.`);
+if (covered === 0 && partial === 0) alert("Aucun ingrédient de ta liste ne correspond à ton frigo.");
+else alert(`Frigo vérifié (${source}) : ${covered} ingrédient(s) déjà en stock (cochés), ${partial} partiel(s) à compléter.`);
 }
 const TRANSLATIONS = {"Avocado":"Avocat","Apple Cider Vinegar":"Vinaigre de cidre","Asparagus":"Asperges","Aubergine":"Aubergine","Baby Plum Tomatoes":"Tomates cerises","Bacon":"Lardons","Baking Powder":"Levure chimique","Balsamic Vinegar":"Vinaigre balsamique","Basil":"Basilic","Basil Leaves":"Feuilles de basilic","Basmati Rice":"Riz basmati","Bay Leaf":"Feuille de laurier","Bay Leaves":"Feuilles de laurier","Beef Brisket":"Poitrine de bœuf","Beef Fillet":"Filet de bœuf","Beef Gravy":"Sauce au bœuf","Beef Stock":"Bouillon de bœuf","Bicarbonate Of Soda":"Bicarbonate de soude","Biryani Masala":"Épices biryani","Black Pepper":"Poivre noir","Black Treacle":"Mélasse","Borlotti Beans":"Haricots borlotti","Bowtie Pasta":"Pâtes papillon","Bramley Apples":"Pommes Bramley","Brandy":"Cognac","Bread":"Pain","Breadcrumbs":"Chapelure","Broccoli":"Brocoli","Brown Lentils":"Lentilles brunes","Brown Rice":"Riz complet","Brown Sugar":"Sucre roux","Butter":"Beurre","Cacao":"Cacao","Cajun":"Épices cajun","Canned Tomatoes":"Tomates en conserve","Cannellini Beans":"Haricots cannellini","Cardamom":"Cardamome","Carrots":"Carottes","Cashew Nuts":"Cajous","Cashews":"Cajous","Caster Sugar":"Sucre en poudre","Cayenne Pepper":"Piment de Cayenne","Celeriac":"Céleri-rave","Celery":"Céleri","Celery Salt":"Sel de céleri","Challots":"Échalotes","Charlotte Potatoes":"Pommes de terre Charlotte","Cheddar Cheese":"Cheddar","Cheese Curds":"Fromage frais","Cherry Tomatoes":"Tomates cerises","Chestnut Mushroom":"Champignons de Paris","Chicken Breast":"Blanc de poulet","Chicken Breasts":"Blancs de poulet","Chicken Legs":"Cuisses de poulet","Chicken Thighs":"Cuisses de poulet","Chicken Stock":"Bouillon de volaille","Chickpeas":"Pois chiches","Chili Powder":"Piment en poudre","Chilled Butter":"Beurre froid","Chilli":"Piment","Chilli Powder":"Piment en poudre","Chinese Broccoli":"Brocoli chinois","Chocolate Chips":"Pépites de chocolat","Chopped Onion":"Oignon émincé","Chopped Parsley":"Persil haché","Chopped Tomatoes":"Tomates concassées","Chorizo":"Chorizo","Christmas Pudding":"Pudding de Noël","Cilantro":"Coriandre fraîche","Cinnamon":"Cannelle","Cinnamon Stick":"Bâton de cannelle","Cloves":"Girofle","Cocoa":"Cacao","Coconut Cream":"Crème de coco","Coconut Milk":"Lait de coco","Colby Jack Cheese":"Fromage Colby","Cold Water":"Eau froide","Condensed Milk":"Lait condensé","Coriander":"Coriandre","Couscous":"Couscous","Cranberries":"Canneberges","Cranberry Juice":"Jus de cranberry","Cream":"Crème","Cream Cheese":"Fromage à tartiner","Creme Fraiche":"Crème fraîche","Cucumber":"Concombre","Cumin":"Cumin","Curry Powder":"Curry en poudre","Dark Chocolate":"Chocolat noir","Demerara Sugar":"Sucre demerara","Dijon Mustard":"Moutarde de Dijon","Dill":"Aneth","Double Cream":"Crème épaisse","Dried Apricots":"Abricots secs","Dried Chilli":"Piment séché","Dried Oregano":"Origan séché","Dried Raisins":"Raisins secs","Duck Legs":"Cuisses de canard","Eggplant":"Aubergine","Eggs":"Œufs","Egg":"Œuf","Egg Yolks":"Jaunes d'œufs","Egg Whites":"Blancs d'œufs","Fennel":"Fenouil","Fennel Seeds":"Graines de fenouil","Fenugreek":"Fenugrec","Fish Sauce":"Sauce de poisson","Flaked Almonds":"Amandes effilées","Flour":"Farine","Plain Flour":"Farine","Fresh Basil":"Basilic frais","Fresh Chilli":"Piment frais","Fresh Coriander":"Coriandre fraîche","Fresh Cream":"Crème fraîche","Garlic":"Ail","Garlic Clove":"Gousse d'ail","Garlic Cloves":"Gousses d'ail","Garlic Salt":"Ail en poudre","Ginger":"Gingembre","Golden Syrop":"Sirop doré","Grana Padano":"Grana Padano","Granulated Sugar":"Sucre en grains","Green Lentils":"Lentilles vertes","Ground Almonds":"Poudre d'amandes","Ground Cumin":"Cumin moulu","Garam Masala":"Garam masala","Harissa":"Harissa","Hazelnuts":"noisettes","Honey":"Miel","Horseradish":"Raifort","Hot Beef Stock":"Bouillon de bœuf chaud","Icing Sugar":"Sucre glace","Jalapeno":"Jalapeño","Jerusalem Artichoke":"Topinambour","Kale":"Chou kale","Ketchup":"Ketchup","Lamb Loin":"Filet d'agneau","Lamb Mince":"Viande d'agneau hachée","Leek":"Poireau","Leeks":"Poireaux","Lemon Juice":"Jus de citron","Lemons":"Citrons","Lemon":"Citron","Lentils":"Lentilles","Lettuce":"Laitue","Limes":"Citrons verts","Lime":"Citron vert","Mace":"Muscade","Madeira":"Madère","Malt Vinegar":"Vinaigre de malt","Mango":"Mangue","Maple Syrup":"Sirop d'érable","Marjoram":"Marjolaine","Mascarpone":"Mascarpone","Milk":"Lait","Minced Beef":"Bœuf haché","Mint":"Menthe","Mozzarella":"Mozzarella","Mushrooms":"Champignons","Mussels":"Moules","Mustard":"Moutarde","Mustard Seeds":"Graines de moutarde","Nutmeg":"Muscade","Oatmeal":"Flocons d'avoine","Olive Oil":"Huile d'olive","Olives":"Olivier/Olives","Onion":"Oignon","Onions":"Oignons","Onion Salt":"Sel d'oignon","Oranges":"Oranges","Oregano":"Origan","Oyster Sauce":"Sauce d'huître","Paprika":"Paprika","Parsley":"Persil","Parsnips":"Panais","Passata":"Passata (tomates)","Pasta":"Pâtes","Peanut Oil":"Huile d'arachide","Peanuts":"Arachides","Peas":"Petits pois","Pecans":"Pécan","Pepper":"Poivre","Peppercorns":"Grains de poivre","Pine Nuts":"Pignons","Pistachio Nuts":"Pistaches","Plum Tomatoes":"Tomates","Pork":"Porc","Pork Belly":"Poitrine de porc","Pork Chops":"Côtes de porc","Pork Loin":"Filet de porc","Potatoes":"Pommes de terre","Potato":"Pomme de terre","Prawns":"Crevettes","Puff Pastry":"Pâte feuilletée","Pumpkin":"Potiron","Quail's Eggs":"Œufs de caille","Raisins":"Raisins secs","Rapeseed Oil":"Huile de colza","Raspberries":"Framboises","Red Lentils":"Lentilles corail","Red Onion":"Oignon rouge","Red Onions":"Oignons rouges","Red Pepper":"Poivron rouge","Red Peppers":"Poivrons rouges","Red Wine":"Vin rouge","Rhubarb":"Rhubarbe","Rice":"Riz","Rice Noodles":"Nouilles de riz","Ricotta":"Ricotta","Rosemary":"Romarin","Saffron":"Safran","Sage":"Sauge","Salmon":"Saumon","Salsa":"Salsa","Salt":"Sel","Sausages":"Saucisses","Scallions":"Ciboules","Shallots":"Échalotes","Sherry":"Sherry","Soy Sauce":"Sauce soja","Spinach":"Épinards","Spring Onion":"Ciboule","Spring Onions":"Ciboules","Squash":"Courge","Stock":"Bouillon","Strawberries":"Fraises","Strong Flour":"Farine de gruau","Sugar":"Sucre","Sun-Dried Tomatoes":"Tomates séchées","Sweetcorn":"Maïs","Sweet Potato":"Patate douce","Tagliatelle":"Tagliatelles","Tamarind":"Tamarin","Tarragon":"Estragon","Thyme":"Thym","Tofu":"Tofu","Tomatoes":"Tomates","Tomato":"Tomate","Tomato Ketchup":"Ketchup","Tomato Puree":"Concentré de tomates","Tuna":"Thon","Turmeric":"Curcuma","Vanilla":"Vanille","Vegetable Oil":"Huile végétale","Vegetable Stock":"Bouillon de légumes","Vermicelli":"Vermicelles","Vinegar":"Vinaigre","Water":"Eau","Watercress":"Cresson","White Chocolate":"Chocolat blanc","White Flour":"Farine blanche","White Wine":"Vin blanc","Whole Wheat Flour":"Farine complète","Wild Rice":"Riz sauvage","Worcestershire Sauce":"Sauce Worcestershire","Yeast":"Levure","Yellow Pepper":"Poivron jaune","Yoghurt":"Yaourt","Yogurt":"Yaourt","Zucchini":"Courgette","Courgettes":"Courgettes","Beef":"Bœuf","Chicken":"Poulet","Cheddar":"Cheddar","Cheese":"Fromage","Feta":"Feta","Chickpea Flour":"Farine de pois chiches","Semolina":"Semoule","Sesame Oil":"Huile de sésame","Sesame Seeds":"Graines de sésame","Star Anise":"Anis étoilé","Chestnuts":"Châtaignes","Pecorino":"Pecorino","Lamb":"Agneau","Turkey":"Dinde","Duck":"Canard","Ham":"Jambon","Bacon Rashers":"Tranches de lard","Basiliccio":"Basilic","Bouillon":"Bouillon","Cajun Seasoning":"Assaisonnement cajun","Cannelle":"Cannelle","Cardamom Pods":"Gousses de cardamome","Cayenne":"Cayenne","Cherry Tomatoes1":"Tomates cerises","Chicken Breast Fillets":"Filets de poulet","Chives":"Ciboulette","Cocoa Powder":"Cacao en poudre","Coconut":"Noix de coco","Coconut Oil":"Huile de coco","Coriander Seeds":"Graines de coriandre","Cornflour":"Fécule de maïs","Cornstarch":"Fécule de maïs","Cottage Cheese":"Fromage blanc","Cream Cracker":"Biscuit salé","Crème Fraîche":"Crème fraîche","Cumin Seeds":"Graines de cumin","Dark Brown Sugar":"Cassonade","Dark Soy Sauce":"Sauce soja foncée","Desiccated Coconut":"Noix de coco râpée","Digestive Biscuits":"Biscuits digestifs","Double Tomato Sauce Concentre":"Sauce tomate concentrée","Dried Basilic":"Basilic séché","Dried Chilli Flakes":"Flocons de piment","Dried Dill":"Aneth séché","Dried Fenugreek Leaves":"Fenugrec séché","Dried Ginger":"Gingembre séché","Dried Mint":"Menthe séchée","Dried Mixed Herbs":"Herbes de Provence","Dried Oregano1":"Origan séché","Dried Parsley":"Persil séché","Dried Thyme":"Thym séché","Duck Fat":"Graisse de canard","Egg Pasta":"Pâtes aux œufs","Farfalle":"Farfalle","Filo Pastry":"Pâte filo","Fish Stock":"Bouillon de poisson","Free Range Eggs":"Œufs","French Onion Soup":"Soupe à l'oignon","Ghee":"Ghee","Goat Cheese":"Fromage de chèvre","Golden Syrup":"Sirop de maïs","Green Chillies":"Piments verts","Green Olives":"Olives vertes","Green Onion":"Ciboule","Green Onions":"Ciboules","Green Pepper":"Poivron vert","Ground Cinnamon":"Cannelle moulue","Ground Ginger":"Gingembre moulu","Ground Pork":"Porc haché","Hot Chicken Stock":"Bouillon de poule chaud","Hungarian Paprika":"Paprika hongrois","Indian Spice":"Épices indiennes","Jasmine Rice":"Riz jasmin","Kaffir Lime Leaves":"Feuilles de combava","Kalamata Olives":"Olives kalamata","Kidney Beans":"Haricots rouges","King Prawns":"Crevettes","Kohlrabi":"Chou-rave","Lamb Shoulder":"Épaule d'agneau","Lard":"Saindoux","Lasagne Sheets":"Feuilles de lasagne","Light Soy Sauce":"Sauce soja claire","Lime Juice":"Jus de citron vert","Lime Zest":"Zeste de citron vert","Mace Blades":"Muscade","Macaroni":"Macaroni","Malted Milk":"Lait malté","Mandarin":"Mandarine","Maple Butter":"Beurre d'érable","Maris Piper Potatoes":"Pommes de terre","Marsala":"Marsala","Medjool Dates":"Dattes Medjool","Milk Chocolate":"Chocolat au lait","Mint Sauce":"Sauce à la menthe","Monkfish":"Lotte","Nori":"Algues nori","Nutmeg Ground":"Muscade moulue","Oil":"Huile","Onion Powder":"Oignon en poudre","Orange Zest":"Zeste d'orange","Palm Sugar":"Sucre de palme","Pancakes":"Crêpes","Pancetta":"Pancetta","Panko Breadcrumbs":"Chapelure panko","Paprika Mild":"Paprika doux","Parsley Fresh":"Persil frais","Pastry":"Pâte","Peanut Butter":"Beurre de cacahuète","Pepperoni":"Pepperoni","Pickled Walnuts":"Noix marinées","Pineapple":"Ananas","Pinto Beans":"Haricots pinto","Pitta Bread":"Pain pita","Plum Tomato":"Tomate","Polenta":"Polenta","Pomegranate":"Grenade","Poppy Seeds":"Graines de pavot","Pork Fillet":"Filet de porc","Pork Mince":"Porc haché","Pork Sausages":"Saucisses de porc","Pork Shoulder":"Épaule de porc","Portobellos":"Portobellos","Potato Starch":"Fécule de pomme de terre","Powdered Sugar":"Sucre glace","Prawn":"Crevette","Pretzels":"Bretzels","Puy Lentils":"Lentilles du Puy","Quinoa":"Quinoa","Radishes":"Radis","Raisin":"Raisin sec","Red Chilli":"Piment rouge","Red Pepper Flakes":"Flocons de piment","Red Wine Vinegar":"Vinaigre de vin rouge","Rice Noodles1":"Nouilles de riz","Ricotta Cheese":"Ricotta","Rolled Oats":"Flocons d'avoine","Roma Tomatoes":"Tomates Roma","Rose Wine":"Vin rosé","Rum":"Rhum","Saffron Threads":"Safran","Sage Leaves":"Feuilles de sauge","Salmon Fillet":"Filet de saumon","Salted Butter":"Beurre demi-sel","Sambal Oelek":"Sambal oelek","Sea Salt":"Sel de mer","Self-Raising Flour":"Farine à lever","Sesame Seed":"Graine de sésame","Shallot":"Échalote","Shaoxing Wine":"Vin de Shaoxing","Shellfish":"Fruits de mer","Smoked Paprika":"Paprika fumé","Smoked Salmon":"Saumon fumé","Snow Peas":"Pois gourmands","Soy Bean":"Soja","Spaghetti":"Spaghetti","Spinach Leaves":"Feuilles d'épinards","Spring Greens":"Choux de printemps","Squid":"Calamars","Steak":"Bifteck","Stilton":"Stilton","Stout":"Stout","Sugar Cane":"Canne à sucre","Summer Savory":"Sarriette","Sultanas":"Raisins de Smyrne","Sunflower Oil":"Huile de tournesol","Sweet Chilli Sauce":"Sauce chili sucrée","Sweetener":"Édulcorant","Tagine Spices":"Épices à tajine","Taleggio":"Taleggio","Tamarind Paste":"Pâte de tamarin","Tinned Tomatoes":"Tomates en boîte","Toasted Almonds":"Amandes grillées","Tomato Paste":"Coulis de tomate","Treacle":"Mélasse","Turmeric Root":"Racine de curcuma","Unsalted Butter":"Beurre doux","Vanilla Extract":"Extrait de vanille","Vanilla Ice Cream":"Glace à la vanille","Veal":"Veau","Vegetables":"Légumes","Vermouth":"Vermouth","Vinaigrette":"Vinaigrette","Wafer Ham":"Jambon en tranches","Walnut":"Noix","Walnuts":"Noix","Water Chestnuts":"Châtaignes d'eau","White Breadcrumbs":"Chapelure blanche","White Cabbage":"Chou blanc","White Pepper":"Poivre blanc","White Wine Vinegar":"Vinaigre de vin blanc","Whole Almonds":"Amandes entières","Whole Chicken":"Poulet entier","Wine":"Vin","Yeast Extract":"Extrait de levure","Yellow Onions":"Oignons jaunes","Yukon Gold Potatoes":"Pommes de terre Yukon"};
 const CATS_FR = {"Chicken":"Poulet","Beef":"Bœuf","Pork":"Porc","Fish":"Poisson","Seafood":"Fruits de mer","Vegetarian":"Végétarien","Vegan":"Vegan","Dessert":"Dessert","Starter":"Entrée","Breakfast":"Petit-déjeuner","Side":"Accompagnement","Miscellaneous":"Divers","Lamb":"Agneau","Goat":"Chèvre","Pasta":"Pâtes"};
