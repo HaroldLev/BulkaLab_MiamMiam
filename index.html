@@ -112,13 +112,13 @@
 <div id="step3" style="display:none">
 <div class="field" style="margin-bottom:6px">
 <label>Chercher une recette</label>
-<input id="fSearch" placeholder="carbonara, chicken..." autocomplete="off" oninput="onSearchInput()">
+<input id="fSearch" placeholder="carbonara, tarte, poulet..." autocomplete="off" oninput="onSearchInput()">
 </div>
 <div id="searchResults" class="search-results"></div>
 <div id="manualFields" style="display:none">
 <div class="field">
 <label>Nom de la recette</label>
-<input id="fName" placeholder="Ex : Pâtes carbonara">
+<input id="fName" placeholder="Ex : Poulet au citron">
 </div>
 <div class="field">
 <label>Ingrédients (modifiables)</label>
@@ -415,7 +415,7 @@ h += `<button type="button" class="area-choice" onclick="chooseArea('${g === "To
 document.getElementById("areaChoices").innerHTML = h;
 }
 function chooseArea(g) {
-currentArea = g || null;
+currentArea = (g && AREA_GROUPS[g]) ? g : null;
 document.getElementById("step2").style.display = "none";
 document.getElementById("step3").style.display = "";
 document.getElementById("typeLabel").textContent = TYPE_LABELS[currentType] + (currentArea ? " · " + currentArea : "");
@@ -443,7 +443,8 @@ return TYPE_TO_CATS[currentType].includes(m.strCategory);
 }
 function mealMatchesArea(m) {
 if (!currentArea) return true;
-return AREA_GROUPS[currentArea].includes(m.strArea);
+const group = AREA_GROUPS[currentArea];
+return Array.isArray(group) && group.includes(m.strArea);
 }
 async function showSuggestions() {
 const res = document.getElementById("searchResults");
@@ -505,7 +506,7 @@ const r = await fetch(`https://www.themealdb.com/api/json/v1/1/search.php?s=${en
 data = await r.json();
 }
 if (!data || !data.meals) {
-res.innerHTML = `<div class="loading">Rien trouvé pour « ${escapeHtml(q)} ». Essaie un autre mot (ex : chicken, tart, soup).</div>`;
+res.innerHTML = `<div class="loading">Rien trouvé pour « ${escapeHtml(q)} ». Essaie en anglais (ex : chicken, tart, soup).</div>`;
 return;
 }
 window._mealsCache = {};
@@ -543,39 +544,7 @@ document.getElementById("servingsBase").textContent = baseServings;
 document.getElementById("manualFields").style.display = "";
 document.getElementById("fName").value = mealNameFr(m);
 document.getElementById("fIngredients").value = mealToIngredients(m, currentServings / baseServings).join("\n");
-document.getElementById("searchResults").innerHTML = `<div class="loading">✅ Recette « ${escapeHtml(m.strMeal)} chargée !</div>`;
-}
-async function showRandomSuggestions() {
-const res = document.getElementById("searchResults");
-res.innerHTML = `<div class="loading">Suggestions...</div>`;
-try {
-const out = [];
-const seen = new Set();
-let tries = 0;
-while (out.length < 5 && tries < 15) {
-tries++;
-const r = await fetch("https://www.themealdb.com/api/json/v1/1/random.php");
-const data = await r.json();
-const m = data.meals && data.meals[0];
-if (m && !seen.has(m.idMeal)) { seen.add(m.idMeal); out.push(m); }
-}
-if (out.length === 0) throw new Error("no suggestions");
-if (!window._mealsCache) window._mealsCache = {};
-let html = `<div class="result-hint">Suggestions du moment :</div>`;
-out.forEach(m => {
-window._mealsCache[safeId(m.idMeal)] = m;
-html += `<div class="result-card" data-id="${safeId(m.idMeal)}" onclick="pickMeal('${safeId(m.idMeal)}')">
-<img src="${safeImgUrl(m.strMealThumb)}" alt="">
-<div style="flex:1">
-<div class="result-name">${escapeHtml(m.strMeal)}</div>
-<div class="result-meta">${escapeHtml(catFr(m.strCategory || ""))}${m.strArea ? " · " + escapeHtml(areaFr(m.strArea)) : ""}</div>
-</div>
-</div>`;
-});
-res.innerHTML = html;
-} catch (e) {
-res.innerHTML = `<div class="loading">Erreur réseau.</div>`;
-}
+document.getElementById("searchResults").innerHTML = `<div class="loading">✅ Recette « ${escapeHtml(mealNameFr(m))} chargée !</div>`;
 }
 function openModal() {
 editId = null;
@@ -593,7 +562,6 @@ document.getElementById("searchResults").innerHTML = "";
 document.getElementById("fName").value = "";
 document.getElementById("fIngredients").value = "";
 document.getElementById("modalBg").classList.add("open");
-showRandomSuggestions();
 }
 function closeModal() {
 document.getElementById("modalBg").classList.remove("open");
@@ -729,6 +697,45 @@ k = k.trim();
 const slug = INGREDIENT_IMG_OVERRIDES[k] || k.replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
 return "https://www.themealdb.com/images/ingredients/" + slug.replace(/[^a-z0-9_]+/g, "_") + "-small.png";
 }
+
+// ============ TRADUCTION INSTRUCTIONS (EN → FR) ============
+const INSTR_FR = [
+[/\b(preheat|heat)\b\s*(the )?oven\b to (\d+)°?c?/gi, "Préchauffer le four à $3°C"],
+[/\b(preheat|heat)\b\s*(the )?oven\b to (\d+)°?f/gi, "Préchauffer le four à $3°F"],
+[/\b(preheat|heat)\b\s*(the )?oven\b/gi, "Préchauffer le four"],
+[/\bbrush\b/gi, "Badigeonner"], [/\bseason\b/gi, "Assaisonner"], [/\bset aside\b/gi, "Réserver"],
+[/\bfinely chop\b/gi, "Émincer finement"], [/\bchop\b/gi, "Couper"], [/\bdice\b/gi, "Couper en dés"],
+[/\bslice\b/gi, "Trancher"], [/\bpeel\b/gi, "Éplucher"], [/\bmix\b/gi, "Mélanger"], [/\bstir\b/gi, "Remuer"],
+[/\bwhisk\b/gi, "Fouetter"], [/\bbeat\b/gi, "Battre"], [/\bfold\b/gi, "Incorporer"], [/\badd\b/gi, "Ajouter"],
+[/\bpour\b/gi, "Verser"], [/\bplace\b/gi, "Placer"], [/\bserve\b/gi, "Servir"], [/\bgarnish\b/gi, "Garnir"],
+[/\bdrizzle\b/gi, "Napper"], [/\bsprinkle\b/gi, "Saupoudrer"], [/\btransfer\b/gi, "Transvaser"],
+[/\bmarinate\b/gi, "Mariner"], [/\bbake\b/gi, "Cuire au four"], [/\broast\b/gi, "Rôtir"],
+[/\bfry\b/gi, "Faire frire"], [/\bcoat\b/gi, "Enrober"], [/\bsimmer\b/gi, "Mijoter"],
+[/\bboil\b/gi, "Faire bouillir"], [/\bcool\b/gi, "Laisser refroidir"], [/\bchill\b/gi, "Mettre au frais"],
+[/\brefrigerate\b/gi, "Réfrigérer"], [/\bremove\b/gi, "Retirer"], [/\bdiscard\b/gi, "Jeter"],
+[/\brinse\b/gi, "Rincer"], [/\bdrain\b/gi, "Égoutter"], [/\bflip\b/gi, "Retourner"],
+[/\bspread\b/gi, "Étaler"], [/\blayer\b/gi, "Disposer en couches"], [/\bscoop\b/gi, "Prélever"],
+[/\bcombine\b/gi, "Combiner"], [/\bcook\b/gi, "Cuire"], [/\bheat\b/gi, "Chauffer"],
+[/\bmelt\b/gi, "Faire fondre"], [/\bshape\b/gi, "Façonner"], [/\broll\b/gi, "Rouler"],
+[/\bbeat together\b/gi, "Battre ensemble"], [/\bmake sure\b/gi, "Veiller à"],
+[/\bminute(s)?\b/gi, "minute(s)"], [/\bover (medium|high|low) heat\b/gi, "à feu moyen-fort-doux"],
+[/\bfor (\d+)-(\d+) minutes\b/gi, "pendant $1 à $2 minutes"], [/\bfor (\d+) minutes\b/gi, "pendant $1 minutes"],
+[/\buntil\b/gi, "jusqu'à ce que"], [/\bthen\b/gi, "puis"], [/\bmeanwhile\b/gi, "pendant ce temps"],
+[/\band\b/gi, "et"], [/\bwith\b/gi, "avec"], [/\binto\b/gi, "dans"], [/\bover\b/gi, "sur"],
+[/\btop\b/gi, "dessus"], [/\bbefore\b/gi, "avant"], [/\bafter\b/gi, "après"], [/\bduring\b/gi, "pendant"],
+[/\bsaucepan\b/gi, "casserole"], [/\bpan\b/gi, "poêle"], [/\bpot\b/gi, "marmite"],
+[/\bbaking tray\b/gi, "plaque de cuisson"], [/\bdish\b/gi, "plat"], [/\bbowl\b/gi, "saladier"],
+[/\bkitchen paper\b/gi, "papier absorbant"], [/\bwooden spoon\b/gi, "cuillère en bois"]
+];
+function translateInstructions(txt) {
+if (!txt) return "";
+let out = txt;
+for (const [re, fr] of INSTR_FR) {
+out = out.replace(re, fr);
+}
+return out;
+}
+
 function openDetail(id) {
 const r = recipes.find(x => x.id === id);
 if (!r) return;
@@ -746,7 +753,7 @@ h += `<div class="detail-ing"><img src="${ingredientImgUrl(line)}" alt="" loadin
 }
 if (r.instructions) {
 h += `<div class="section-title">Recette</div>`;
-h += `<div class="detail-instructions">${escapeHtml(r.instructions)}</div>`;
+h += `<div class="detail-instructions">${escapeHtml(translateInstructions(r.instructions))}</div>`;
 }
 h += `<div class="modal-actions"><button class="btn btn-secondary" onclick="closeDetail()">Fermer</button></div>`;
 document.getElementById("detailContent").innerHTML = h;
