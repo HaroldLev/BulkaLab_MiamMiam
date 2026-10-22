@@ -98,10 +98,7 @@ ticket-select, .ticket-select{width:100%;border:1px solid var(--border);border-r
 <main id="viewList" class="hidden">
 <div class="section-title">À acheter</div>
 <div id="ingredientList"></div>
-<button class="btn btn-secondary" style="width:100%; margin-top:10px;" onclick="clearChecked()">Décocher tout</button>
-<button class="btn btn-secondary" id="btnCheckFridge" style="width:100%; margin-top:10px;" onclick="checkAgainstFridge()">🧊 Vérifier mon frigo</button>
 <div class="hint" style="text-align:center">Matching intelligent par IA, repli sur les synonymes locaux si hors-ligne.</div>
-<button class="btn btn-primary" style="width:100%; margin-top:10px;" onclick="openPriceModal()">💰 Estimer le prix du panier</button>
 </main>
 <main id="viewTicket" class="hidden">
 <div class="section-title">Ticket de caisse</div>
@@ -123,9 +120,7 @@ ticket-select, .ticket-select{width:100%;border:1px solid var(--border);border-r
 </div>
 <div class="section-title">Prix relevés</div>
 <div id="ticketLines"></div>
-<button class="btn btn-secondary" style="width:100%;margin-top:6px" onclick="addTicketLine()">➕ Ajouter un produit</button>
 <div class="hint" style="margin-top:8px">Ces prix remplaceront les prix moyens pour ce magasin dans l’estimation de ton panier, et les quantités iront dans ton Frigo.</div>
-<button class="btn btn-primary" style="width:100%;margin-top:10px" onclick="saveTicket()">💾 Enregistrer le ticket</button>
 <div class="section-title" style="margin-top:16px">Tickets passés</div>
 <div id="ticketHistory"></div>
 </main>
@@ -141,7 +136,6 @@ ticket-select, .ticket-select{width:100%;border:1px solid var(--border);border-r
 <option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="L">L</option><option value="pc" selected>pièce(s)</option>
 </select></div>
 </div>
-<button class="btn btn-primary" style="width:100%" onclick="addToFridge()">🧊 Ajouter au frigo</button>
 </main>
 <datalist id="ingDatalist"></datalist>
 <div class="modal-bg" id="detailModalBg" onclick="if(event.target===this)closeDetail()">
@@ -212,9 +206,21 @@ ticket-select, .ticket-select{width:100%;border:1px solid var(--border);border-r
 <div id="priceResult" style="display:none"></div>
 </div>
 </div>
-<footer>
+<footer id="footerRecipes">
 <button class="btn btn-secondary" id="btnClear" onclick="clearSelection()">Tout retirer</button>
 <button class="btn btn-primary" id="btnGenerate" onclick="showTab('list')" disabled>🛒 Voir ma liste</button>
+</footer>
+<footer id="footerList" class="hidden">
+<button class="btn btn-secondary" onclick="clearChecked()">Décocher tout</button>
+<button class="btn btn-secondary" id="btnCheckFridge" onclick="checkAgainstFridge()">🧊 Vérifier mon frigo</button>
+<button class="btn btn-primary" onclick="openPriceModal()">💰 Estimer le prix</button>
+</footer>
+<footer id="footerTicket" class="hidden">
+<button class="btn btn-secondary" onclick="addTicketLine()">➕ Ajouter un produit</button>
+<button class="btn btn-primary" onclick="saveTicket()">💾 Enregistrer le ticket</button>
+</footer>
+<footer id="footerFridge" class="hidden">
+<button class="btn btn-primary" style="flex:100%" onclick="addToFridge()">🧊 Ajouter au frigo</button>
 </footer>
 <div style="text-align:center;font-size:10px;color:var(--muted);padding:6px 0 10px;position:fixed;bottom:0;left:0;right:0;pointer-events:none;background:linear-gradient(transparent,var(--bg) 40%)">
 Recettes : TheMealDB + Données METRO France (metro.fr) – CC-BY 4.0
@@ -274,7 +280,7 @@ Recettes : TheMealDB + Données METRO France (metro.fr) – CC-BY 4.0
 </div>
 </div>
 </div>
-<script>const APP_VERSION = "1.23.0";
+<script>const APP_VERSION = "1.24.0";
 const GEMINI_KEY = ["AQ.", "Ab8RN6LNj_qwe", "HzNsF3YVNdjcN4", "P0l2Xqs_8U7", "GGxPOtmGZj2Q"].join("");
 const GEMINI_MODEL = "gemini-3.5-flash";
 const DEFAULT_RECIPES = [];
@@ -326,6 +332,9 @@ document.getElementById("tabFridge").classList.toggle("active", tab === "fridge"
 document.getElementById("tabRecipes").classList.toggle("active", tab === "recipes");
 document.getElementById("tabList").classList.toggle("active", tab === "list");
 document.getElementById("btnGenerate").disabled = selection.length === 0;
+const footers = ["footerRecipes", "footerList", "footerTicket", "footerFridge"];
+const footerFor = { recipes: "footerRecipes", list: "footerList", ticket: "footerTicket", fridge: "footerFridge" };
+for (const f of footers) document.getElementById(f).classList.toggle("hidden", f !== footerFor[tab]);
 if (tab === "list") renderIngredients();
 window.scrollTo(0, 0);
 }
