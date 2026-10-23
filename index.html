@@ -280,7 +280,7 @@ Recettes : TheMealDB + Données METRO France (metro.fr) – CC-BY 4.0
 </div>
 </div>
 </div>
-<script>const APP_VERSION = "1.24.0";
+<script>const APP_VERSION = "1.25.0";
 const GEMINI_KEY = ["AQ.", "Ab8RN6LNj_qwe", "HzNsF3YVNdjcN4", "P0l2Xqs_8U7", "GGxPOtmGZj2Q"].join("");
 const GEMINI_MODEL = "gemini-3.5-flash";
 const DEFAULT_RECIPES = [];
@@ -378,8 +378,9 @@ renderRecipes();
 const GRAMS = { g: 1, gr: 1, gramme: 1, grammes: 1, kg: 1000, kilo: 1000, kilos: 1000 };
 const LITERS = { l: 1, litre: 1, litres: 1, litre: 1, ml: 0.001, cl: 0.01, dl: 0.1 };
 function parseIngredient(line) {
-const m = line.trim().match(/^(\d+(?:[.,]\d+)?)\s*(kg|g|gr|grammes?|gramme|l|litres?|litre|ml|cl|dl|kilo|kilos)\s+(.+)$/i);
-if (!m) return { name: line.trim(), qty: null };
+const t = line.trim();
+const m = t.match(/^(\d+(?:[.,]\d+)?)\s*(kg|g|gr|grammes?|gramme|l|litres?|litre|ml|cl|dl|kilo|kilos)\s+(.+)$/i);
+if (m) {
 let val = parseFloat(m[1].replace(",", "."));
 const unitRaw = m[2].toLowerCase();
 let unit = unitRaw.startsWith("k") && unitRaw !== "kilo" && unitRaw !== "kilos" ? "g" : (unitRaw === "kilo" || unitRaw === "kilos" ? "g" : (GRAMS[unitRaw] ? "g" : "l"));
@@ -387,6 +388,17 @@ if (unit === "g") val = val * GRAMS[unitRaw];
 else if (unit === "l") val = val * LITERS[unitRaw];
 const cleanName = m[3].trim().replace(/^(de\s+|du\s+|des\s+|d')/i, "");
 return { name: cleanName, qty: val, unit, raw: `${m[1]} ${m[2]}` };
+}
+const pc = t.match(/^(\d+(?:[.,]\d+)?)\s+(.+)$/);
+if (pc) {
+const rest = pc[2].trim();
+const val = parseFloat(pc[1].replace(",", "."));
+if (!Number.isNaN(val) && val > 0 && rest.length > 0 && /[a-zA-Z\u00c0-\u00ff]/.test(rest)) {
+const cleanName = rest.replace(/^(de\s+|du\s+|des\s+|d')/i, "");
+return { name: cleanName, qty: val, unit: null, raw: pc[1] };
+}
+}
+return { name: t, qty: null };
 }
 function formatQty(total, unit) {
 if (unit === "g") {
@@ -407,8 +419,13 @@ if (!r) continue;
 for (const line of r.ingredients) {
 const p = parseIngredient(line);
 const key = normalizeName(p.name);
-if (!map[key]) map[key] = { name: p.name, qty: null, unit: null, units: [], count: 0 };
-if (p.qty != null && map[key].qty != null && map[key].unit === p.unit) {
+if (!map[key]) map[key] = { name: p.name, qty: null, unit: null, units: [], count: 0, pieces: [] };
+if (p.qty != null && p.unit == null) {
+map[key].pieces.push(p.qty);
+if (map[key].unit == null) { map[key].qty = p.qty; map[key].unit = null; }
+else if (map[key].unit === "g" || map[key].unit === "l") map[key].units.push(line);
+else map[key].qty += p.qty;
+} else if (p.qty != null && map[key].qty != null && map[key].unit === p.unit) {
 map[key].qty += p.qty;
 } else if (p.qty != null && map[key].qty == null) {
 map[key].qty = p.qty; map[key].unit = p.unit;
@@ -596,7 +613,7 @@ const rows = fridge.filter(f => f.key === key || (aiNames && aiNames.includes(f.
 if (!rows.length) return null;
 const needG = it.qty != null && it.unit === "g" ? it.qty : null;
 const needMl = it.qty != null && it.unit === "l" ? it.qty * 1000 : null;
-const needPc = it.qty != null && it.unit == null ? it.qty : null;
+const needPc = it.qty != null && it.unit == null ? it.qty : (it.pieces && it.pieces.length ? it.pieces.reduce((a, b) => a + b, 0) : null);
 let haveG = 0, haveMl = 0, havePc = 0;
 for (const f of rows) {
 if (f.basis === "g") haveG += f.qty;
@@ -618,6 +635,7 @@ return null;
 if (needPc != null) {
 if (havePc > 0 && havePc < needPc) return { full: false, txt: stockTxt };
 if (havePc >= needPc || haveG >= needPc * (PIECE_G[key] || 150) || haveMl >= needPc * 150) return { full: true, txt: stockTxt };
+if (haveG > 0 || haveMl > 0) return { full: false, txt: stockTxt };
 }
 return null;
 }
