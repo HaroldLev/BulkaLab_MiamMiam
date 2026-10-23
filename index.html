@@ -280,7 +280,7 @@ Recettes : TheMealDB + Données METRO France (metro.fr) – CC-BY 4.0
 </div>
 </div>
 </div>
-<script>const APP_VERSION = "1.25.0";
+<script>const APP_VERSION = "1.26.0";
 const GEMINI_KEY = ["AQ.", "Ab8RN6LNj_qwe", "HzNsF3YVNdjcN4", "P0l2Xqs_8U7", "GGxPOtmGZj2Q"].join("");
 const GEMINI_MODEL = "gemini-3.5-flash";
 const DEFAULT_RECIPES = [];
@@ -455,7 +455,7 @@ const NAME_SYNONYMS = {
 "sel":"sel","sel de mer":"sel","poivre":"poivre","poivre noir":"poivre",
 "beurre":"beurre","beurre doux":"beurre","beurre demi-sel":"beurre","beurre sale":"beurre",
 "huile":"huile","huile d'olive":"huile olive","huile olive":"huile olive","huile vegetale":"huile","huile de tournesol":"huile","huile de colza":"huile","huile d'arachide":"huile","huile de sesame":"huile d'olive",
-"lait":"lait","lait de coco":"lait de coco",
+"lait":"lait","lait de coco":"lait de coco","lait demi ecreme":"lait","lait demi-ecreme":"lait","lait entier":"lait","lait uht":"lait","lait frais":"lait","lait demi écrémé":"lait","yaourt":"yaourt","yaourts":"yaourt","yaourt nature":"yaourt","yogourt nature":"yaourt","emmental":"fromage","emmental rape":"fromage","gruyere":"fromage","gruyere rape":"fromage","comte":"fromage","cheddar rape":"fromage",
 "creme":"creme","creme fraiche":"creme","creme epaisse":"creme","creme fraiche epaisse":"creme","double creme":"creme",
 "champignon":"champignon","champignons":"champignon","champignons de paris":"champignon",
 "citron":"citron","citrons":"citron","jus de citron":"citron","zeste de citron":"citron","citron vert":"citron","citrons verts":"citron","jus de citron vert":"citron",
@@ -547,6 +547,35 @@ k = k.replace(/\s+/g, " ").trim();
 if (NAME_SYNONYMS[k]) return NAME_SYNONYMS[k];
 return k;
 }
+const CANON_CONTAINERS = /^(petites?|gros(?:ses?)?|grandes?|moyennes?)\s+(bo[iîte]tes?|pots?|sachets?|paquets?|barquettes?|bouteilles?|briques?|tranches?|gousses?|branches?|feuilles?|pi[eè]ces?)\s+(de\s+|d')?/i;
+function canonName(n) {
+let k = normalizeName(n);
+k = k.replace(/\s*\([^)]*\)/g, " ");
+k = k.replace(CANON_CONTAINERS, "");
+k = k.replace(/^(demi[-\s]?)?(ecr[eé]m[eé]e?|entier|enti[eè]re|nature|fra[iî]che?|fraiches?|en poudre|en grains|moulu|moulue|r[aâ]p[eé]e?|hach[eé]e?|coup[eé]e?|eéminc[eé]e?|pel[eé]e?|frais|dur|durcie|cuit|cru|epaisse?|liquide|demi[-\s]sel|sale?|douce?)\s+/i, "");
+k = k.replace(/^(jaune|rouges?|verts?|blancs?|noirs?)\s+/i, m => /^(oignon|poivron|carotte|chou|haricot|citron)/.test(k) ? m : "");
+k = k.replace(/\s+(jaune|rouges?|verts?|blancs?|noirs?)$/i, m => /oignon|poivron|carotte|chou|haricot/.test(k) ? m : "");
+k = k.replace(/\s+de paris$/i, "");
+k = k.replace(/\s+(de |d')?(paris|dega?|pleurotes?|shiitakes?)$/i, "");
+k = k.replace(/\s+/g, " ").trim();
+return normalizeName(k);
+}
+function cleanFridgeName(n) {
+let k = n.trim();
+k = k.replace(/^\d+(?:[.,]\d+)?\s*(kg|g|gr|ml|cl|dl|l|litres?|x\s*\d+(?:[.,]\d+)?\s*(kg|g|ml|l))\s+(de\s+|d')?/i, "");
+k = k.replace(/\s*\(?\s*\d+(?:[.,]\d+)?\s*(kg|g|gr|ml|cl|dl|l|litres?)\s*\)?\s*$/i, "");
+k = k.replace(/\s+x\s*\d+\s*$/i, "");
+k = k.replace(/\s+\d+\s*(kg|g|ml|l)\s*$/i, "");
+k = k.replace(/\s+/g, " ").trim();
+return k || n.trim();
+}
+function itemBaseQty(it) {
+if (it.qty != null && it.unit === "g") return { basis: "g", qty: it.qty };
+if (it.qty != null && it.unit === "l") return { basis: "ml", qty: it.qty * 1000 };
+if (it.qty != null && it.unit == null) return { basis: "pc", qty: it.qty };
+if (it.pieces && it.pieces.length) return { basis: "pc", qty: it.pieces.reduce((a, b) => a + b, 0) };
+return null;
+}
 function renderIngredients() {
 const el = document.getElementById("ingredientList");
 const items = buildAggregated();
@@ -607,13 +636,11 @@ return (fridgeAiMap && fridgeAiSig && fridgeAiSig === fridgeMatchSig(items)) ? f
 }
 function fridgeStockFor(it, aiMap) {
 if (!fridge.length) return null;
-const key = normalizeName(it.name);
+const key = canonName(it.name);
 const aiNames = aiMap && Array.isArray(aiMap[it.name]) ? aiMap[it.name] : null;
-const rows = fridge.filter(f => f.key === key || (aiNames && aiNames.includes(f.name)));
+const rows = fridge.filter(f => f.key === key || (aiNames && aiNames.map(canonName).includes(f.key)));
 if (!rows.length) return null;
-const needG = it.qty != null && it.unit === "g" ? it.qty : null;
-const needMl = it.qty != null && it.unit === "l" ? it.qty * 1000 : null;
-const needPc = it.qty != null && it.unit == null ? it.qty : (it.pieces && it.pieces.length ? it.pieces.reduce((a, b) => a + b, 0) : null);
+const need = itemBaseQty(it);
 let haveG = 0, haveMl = 0, havePc = 0;
 for (const f of rows) {
 if (f.basis === "g") haveG += f.qty;
@@ -622,19 +649,20 @@ else havePc += f.qty;
 }
 const fmtStock = f => f.basis === "g" ? formatQty(f.qty, "g") : f.basis === "ml" ? formatQty(f.qty / 1000, "l") : f.qty + " pc";
 const stockTxt = rows.map(fmtStock).join(" + ");
-if (needG != null) {
-if (haveG >= needG || havePc >= needG / (PIECE_G[key] || 150)) return { full: true, txt: stockTxt };
+const pieceG = PIECE_G[key] || 150;
+if (need && need.basis === "g") {
+if (haveG >= need.qty || havePc >= need.qty / pieceG) return { full: true, txt: stockTxt };
 if (haveG > 0 || havePc > 0 || haveMl > 0) return { full: false, txt: stockTxt };
 return null;
 }
-if (needMl != null) {
-if (haveMl >= needMl || havePc >= needMl / 150) return { full: true, txt: stockTxt };
+if (need && need.basis === "ml") {
+if (haveMl >= need.qty || havePc >= need.qty / 150) return { full: true, txt: stockTxt };
 if (haveMl > 0 || havePc > 0 || haveG > 0) return { full: false, txt: stockTxt };
 return null;
 }
-if (needPc != null) {
-if (havePc > 0 && havePc < needPc) return { full: false, txt: stockTxt };
-if (havePc >= needPc || haveG >= needPc * (PIECE_G[key] || 150) || haveMl >= needPc * 150) return { full: true, txt: stockTxt };
+if (need && need.basis === "pc") {
+if (havePc > 0 && havePc < need.qty) return { full: false, txt: stockTxt };
+if (havePc >= need.qty || haveG >= need.qty * pieceG || haveMl >= need.qty * 150) return { full: true, txt: stockTxt };
 if (haveG > 0 || haveMl > 0) return { full: false, txt: stockTxt };
 }
 return null;
@@ -672,7 +700,14 @@ else {
 const btn = document.getElementById("btnCheckFridge");
 if (btn) { btn.disabled = true; btn.textContent = "🧊 Analyse IA en cours..."; }
 try {
-aiMap = await matchWithGemini(items.map(i => i.name).slice(0, 60), fridge.map(f => f.name).slice(0, 80));
+const listNames = items.map(i => i.name).slice(0, 60);
+const fridgeNames = fridge.map(f => f.name).slice(0, 80);
+const rawMap = await matchWithGemini(listNames, fridgeNames);
+aiMap = {};
+for (const k of Object.keys(rawMap)) {
+if (!Array.isArray(rawMap[k])) continue;
+aiMap[k] = rawMap[k].map(n => canonName(cleanFridgeName(String(n))));
+}
 fridgeAiMap = aiMap; fridgeAiSig = sig;
 try { localStorage.setItem("fridgeMatch", JSON.stringify({ sig, map: aiMap })); } catch (e) {}
 source = "IA";
@@ -1051,6 +1086,13 @@ return String(s).replace(/&/g, "&amp;").replace(/'/g, "&#39;").replace(/"/g, "&q
 // ============ TICKET DE CAISSE & FRIGO ============
 let tickets = loadJson("tickets", []);
 let fridge = loadJson("fridge", []);
+if (fridge.some(f => f.name && f.key !== canonName(cleanFridgeName(f.name)))) {
+fridge = fridge.map(f => {
+const clean = cleanFridgeName(f.name || "");
+return { ...f, name: clean, key: canonName(clean) };
+});
+try { localStorage.setItem("fridge", JSON.stringify(fridge)); } catch (e) {}
+}
 let userPrices = loadJson("userPrices", {});
 let ticketPhotoData = null;
 
@@ -1215,9 +1257,11 @@ renderTickets();
 }
 
 function addFridgeItem(key, name, qty, basis, origin) {
-const ex = fridge.find(f => f.key === key && f.basis === basis);
-if (ex) { ex.qty += qty; ex.date = Date.now(); }
-else fridge.push({ key, name, qty, basis, origin: origin || "manuel", date: Date.now() });
+const clean = cleanFridgeName(name);
+const ckey = canonName(clean);
+const ex = fridge.find(f => f.key === ckey && f.basis === basis);
+if (ex) { ex.qty += qty; ex.date = Date.now(); if (ex.name !== clean) ex.name = clean; }
+else fridge.push({ key: ckey, name: clean, qty, basis, origin: origin || "manuel", date: Date.now() });
 }
 
 function addToFridge() {
@@ -1226,7 +1270,7 @@ const qtyRaw = document.getElementById("fridgeQty").value;
 const unit = document.getElementById("fridgeUnit").value;
 if (!name || !qtyRaw) { alert("Donne un produit et une quantité."); return; }
 const nq = normalizeQty(qtyRaw, unit);
-addFridgeItem(normalizeName(name), name, nq.amount, nq.basis, "manuel");
+addFridgeItem(canonName(cleanFridgeName(name)), name, nq.amount, nq.basis, "manuel");
 saveTicketData();
 renderFridge();
 document.getElementById("fridgeName").value = "";
