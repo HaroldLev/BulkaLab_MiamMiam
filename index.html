@@ -220,6 +220,7 @@ ticket-select, .ticket-select{width:100%;border:1px solid var(--border);border-r
 </select></div>
 </div>
 <div class="modal-actions">
+<button class="btn btn-secondary" style="color:#d33" onclick="deleteFridgeEdit()">🗑️ Supprimer</button>
 <button class="btn btn-secondary" onclick="closeFridgeEdit()">Annuler</button>
 <button class="btn btn-primary" onclick="saveFridgeEdit()">Enregistrer</button>
 </div>
@@ -298,7 +299,7 @@ Recettes : TheMealDB + Données METRO France (metro.fr) – CC-BY 4.0
 </div>
 </div>
 </div>
-<script>const APP_VERSION = "1.32.0";
+<script>const APP_VERSION = "1.33.0";
 const GEMINI_KEY = ["AQ.", "Ab8RN6LNj_qwe", "HzNsF3YVNdjcN4", "P0l2Xqs_8U7", "GGxPOtmGZj2Q"].join("");
 const GEMINI_MODEL = "gemini-3.5-flash";
 const DEFAULT_RECIPES = [];
@@ -1426,6 +1427,16 @@ document.getElementById("fridgeEditBg").classList.add("open");
 function closeFridgeEdit() {
 document.getElementById("fridgeEditBg").classList.remove("open");
 fridgeEditIdx = -1;
+}
+function deleteFridgeEdit() {
+const i = fridgeEditIdx;
+if (i < 0 || i >= fridge.length) { closeFridgeEdit(); return; }
+if (!confirm(`Retirer « ${fridge[i].name} » du frigo ?`)) return;
+fridge.splice(i, 1);
+fridgeSel = fridgeSel.filter(k => k !== i).map(k => k > i ? k - 1 : k);
+saveTicketData();
+renderFridge();
+closeFridgeEdit();
 }
 function saveFridgeEdit() {
 const i = fridgeEditIdx;
