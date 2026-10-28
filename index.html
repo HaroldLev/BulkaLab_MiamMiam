@@ -299,7 +299,7 @@ Recettes : TheMealDB + Données METRO France (metro.fr) – CC-BY 4.0
 </div>
 </div>
 </div>
-<script>const APP_VERSION = "1.33.0";
+<script>const APP_VERSION = "1.34.0";
 const GEMINI_KEY = ["AQ.", "Ab8RN6LNj_qwe", "HzNsF3YVNdjcN4", "P0l2Xqs_8U7", "GGxPOtmGZj2Q"].join("");
 const GEMINI_MODEL = "gemini-3.5-flash";
 const DEFAULT_RECIPES = [];
@@ -440,7 +440,7 @@ const r = recipes.find(x => x.id === id);
 if (!r) continue;
 for (const line of r.ingredients) {
 const p = parseIngredient(line);
-const key = normalizeName(p.name);
+const key = canonName(p.name);
 if (!map[key]) map[key] = { name: displayName(p.name) || p.name, qty: null, unit: null, units: [], count: 0, pieces: [] };
 if (p.qty != null && p.unit == null) {
 map[key].pieces.push(p.qty);
@@ -556,7 +556,15 @@ const NAME_SYNONYMS = {
 "smoked salmon":"saumon fume","smoked paprika":"paprika","smoked bacon":"lardon","streaky bacon":"lardon","bacon":"lardon","bacon rashers":"lardon","pancetta":"lardon",
 "sausage":"saucisse","sausages":"saucisse","chicken breast":"poulet","chicken breasts":"poulet","chicken thighs":"poulet","chicken legs":"poulet","whole chicken":"poulet",
 "beef mince":"boeuf hache","boeuf hache":"boeuf hache","minced beef":"boeuf hache","ground beef":"boeuf hache","lamb mince":"agneau hache","pork mince":"porc hache","minced pork":"porc hache","ground pork":"porc hache","ground chicken":"poulet","minced lamb":"agneau hache","agneau":"agneau",
-"vegetable oil":"huile","coconut oil":"huile"
+"vegetable oil":"huile","coconut oil":"huile",
+"poulets":"poulet","poulets haches":"poulet","poulets hache":"poulet",
+"poulet a rotir":"poulet","poulets a rotir":"poulet","poulet a rôtir":"poulet","poulets a rôtir":"poulet","poulet entier a rotir":"poulet","poulet entier a rôtir":"poulet","poulet fermier":"poulet","poulet de chair":"poulet","poulet label rouge":"poulet","poulet bio":"poulet","poulet rôti":"poulet","poulet roti":"poulet","poulet roti a l'oignon":"poulet","poulet roti aux herbes":"poulet","poulet roti au four":"poulet","poulet roti maison":"poulet","poulet roti entier":"poulet","poulet au four":"poulet","poulet grille":"poulet","poulet braisé":"poulet","poulet braise":"poulet","poulet saute":"poulet","poulet sauté":"poulet","poulet en sauce":"poulet","poulet mijote":"poulet","poulet mijoté":"poulet","poulet en fricassee":"poulet","poulet fricassee":"poulet","poulet fricassée":"poulet","poulet cocotte":"poulet","poulet au vin":"poulet","poulet basquaise":"poulet","poulet curry":"poulet","poulet tandoori":"poulet","poulet teriyaki":"poulet","poulet yassa":"poulet","poulet tandouri":"poulet","poulet kebab":"poulet","poulet tikka":"poulet","poulet tikka masala":"poulet","poulet korma":"poulet","poulet massala":"poulet","poulet biryani":"poulet","poulet butter chicken":"poulet","poulet jalfrezi":"poulet","poulet dhansak":"poulet","poulet madras":"poulet","poulet vindaloo":"poulet","poulet rogan josh":"poulet","poulet dopiaza":"poulet","poulet bhuna":"poulet","poulet pathia":"poulet","poulet korai":"poulet","poulet karahi":"poulet","poulet balti":"poulet","poulet rezala":"poulet","poulet makhani":"poulet","poulet pasanda":"poulet",
+"poulet a rotir d'environ 1":"poulet","poulets a rotir d'environ 1":"poulet","poulet a rotir d'environ 1 kg":"poulet","poulets a rotir d'environ 1 kg":"poulet",
+"poulet a rotir d'environ 1.2":"poulet","poulets a rotir d'environ 1.2":"poulet","poulet a rotir d'environ 1.2 kg":"poulet","poulets a rotir d'environ 1.2 kg":"poulet",
+"poulet a rotir d'environ 1.5":"poulet","poulets a rotir d'environ 1.5":"poulet","poulet a rotir d'environ 1.5 kg":"poulet","poulets a rotir d'environ 1.5 kg":"poulet",
+"poulet a rotir d'environ 2":"poulet","poulets a rotir d'environ 2":"poulet","poulet a rotir d'environ 2 kg":"poulet","poulets a rotir d'environ 2 kg":"poulet",
+"herbes":"herbes","herbes de provence":"herbes","herbes fraiches":"herbes","herbes fraîches":"herbes","herbes seches":"herbes","herbes sèches":"herbes","herbes mixtes":"herbes","herbes melangees":"herbes","herbes mélangées":"herbes","herbes italiennes":"herbes","herbes fines":"herbes","mixed herbs":"herbes","italian herbs":"herbes","fines herbes":"herbes","bouquet garni":"herbes","herbes provencales":"herbes","herbes provençales":"herbes",
+"bouillon":"bouillon","bouillon de poulet":"bouillon","bouillon de volaille":"bouillon","bouillon de legumes":"bouillon","bouillon de bœuf":"bouillon","bouillon de poisson":"bouillon","cube de bouillon":"bouillon","bouillon cube":"bouillon","bouillon en cube":"bouillon","bouillon en poudre":"bouillon","fond de volaille":"bouillon","fond de veau":"bouillon","fond de boeuf":"bouillon","fond de bœuf":"bouillon","fond de legumes":"bouillon","fond de légumes":"bouillon","fond de poisson":"bouillon","fumet de poisson":"bouillon","fumet":"bouillon","court bouillon":"bouillon","court-bouillon":"bouillon"
 };
 function normalizeName(n) {
 let k = n.toLowerCase().replace(/\b(de |du |des |d'|le |la |les |l')/g, "").replace(/\s+/g, " ").trim();
@@ -564,6 +572,11 @@ k = k.replace(/^(\d+(?:[.,]\d+)?\s*)+/, "").trim();
 k = k.replace(/^(g|gr|kg|ml|cl|dl|l|litres?|c\.?\s*à\s*[sc.]\.?|tbs|tbsp|tsp|cups?|pinch|pinc[eé]e?s?|gousses?|tranches?|branches?|feuilles?|boîte|can(?:ne)?|sachet|packet)\s+/i, "").trim();
 k = k.replace(/\s*(\d+(?:[.,]\d+)?)\s*(g|gr|kg|ml|cl|dl|l|litres?|lb|oz|tbs|tbsp|tsp|cups?)?$/i, "").trim();
 k = k.replace(/\s+(?:finely )?(?:diced|sliced|chopped|minced|crushed|grated|peeled|mashed|cloves|clove|leaves|sprigs|cubes)$/i, "").trim();
+k = k.replace(/\s+(a|ré|a r)\s*(r[oô]tir|griller|braiser|mijoter|saute?r?|en sauce|au four|en cocotte|au vin)\b.*$/i, "");
+k = k.replace(/\s+d'?environ\s+\d+(?:[.,]\d+)?\s*(kg)?\s*$/i, "");
+k = k.replace(/\s+d'?environ\s+\d+(?:[.,]\d+)?\s*$/i, "");
+k = k.replace(/\s+d'?environ\s*$/i, "");
+k = k.replace(/\s+\d+(?:[.,]\d+)?\s*(kg|kilo|kilos)?\s*$/i, "");
 k = k.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/œ/g, "oe").replace(/æ/g, "ae");
 k = k.replace(/\s+/g, " ").trim();
 if (NAME_SYNONYMS[k]) return NAME_SYNONYMS[k];
@@ -1254,7 +1267,7 @@ const unit = row.querySelector(".tl-unit").value;
 const price = parseFloat(String(row.querySelector(".tl-price").value).replace(",", ".")) || 0;
 if (!name || price <= 0) continue;
 const nq = normalizeQty(qtyRaw, unit);
-const key = normalizeName(name);
+const key = canonName(name);
 const rawName = row.querySelector(".tl-label") ? row.querySelector(".tl-label").textContent.trim() : "";
 const fridgeName = rawName || name;
 items.push({ name, key, fridgeName, qty: nq ? nq.amount : null, basis: nq ? nq.basis : null, price });
@@ -1812,7 +1825,7 @@ if (m) { const n = parseFloat(m[1]); return n <= 20 ? { amount: n, basis: "pc" }
 return { amount: 1, basis: "pc" };
 }
 function estimateItemPrice(it, factor, storeId) {
-const key = normalizeName(it.name);
+const key = canonName(it.name);
 const real = storeId ? realPriceFor(key, storeId) : null;
 const { rate } = lookupPrice(displayName(it.name) || it.name);
 const { amount, basis } = estimateAmount(it);
@@ -1855,7 +1868,7 @@ items.forEach((it, idx) => {
 if (checkedItems.includes("ing:" + idx)) { skipped++; return; }
 const { known } = lookupPrice(displayName(it.name) || it.name);
 if (known) knownCount++;
-const isReal = !!(storeId && realPriceFor(normalizeName(it.name), storeId));
+const isReal = !!(storeId && realPriceFor(canonName(it.name), storeId));
 if (isReal) realCount++;
 const price = estimateItemPrice(it, storeFactor, storeId);
 total += price;
