@@ -76,7 +76,7 @@ ticket-select, .ticket-select{width:100%;border:1px solid var(--border);border-r
 .fridge-item .fi-date{font-size:11px;color:var(--muted)}
 .fridge-item .fi-del{border:none;background:none;color:#d33;font-size:17px;cursor:pointer;padding:4px}.fridge-item.sel{border-color:var(--primary);background:#fff4f0}.fridge-item input[type=checkbox]{width:20px;height:20px;accent-color:var(--green);flex-shrink:0}
 .price-real{color:var(--green);font-size:10px;font-weight:700}
-.result-hint{font-size:12px;color:var(--muted);margin:4px 2px}.loading{text-align:center;color:var(--muted);padding:14px;font-size:14px}</style>
+.result-hint{font-size:12px;color:var(--muted);margin:4px 2px}.loading{text-align:center;color:var(--muted);padding:14px;font-size:14px}.create-photo-preview{width:100%;max-height:160px;object-fit:cover;border-radius:12px;margin-top:6px;background:#f7f5f2}.create-photo-btns{display:flex;gap:8px;margin-top:6px}.create-ing-list{margin-top:8px}.create-ing-row{display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:8px 10px;margin-bottom:6px}.create-ing-row .ci-name{flex:1;font-size:14px}.create-ing-row .ci-qty{font-size:13px;color:var(--muted);white-space:nowrap}.create-ing-row .ci-del{border:none;background:none;color:#d33;font-size:17px;cursor:pointer;padding:2px 4px}.create-ing-search{display:flex;gap:6px;margin-top:6px}.create-ing-search input{flex:1;border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:15px;background:var(--bg);font-family:inherit}.create-ing-results{max-height:180px;overflow-y:auto;margin-top:4px}.create-ing-result{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:var(--card);margin-bottom:4px;cursor:pointer;font-size:14px}.create-ing-result:active{background:#fff4f0}.create-ing-result img{width:28px;height:28px;border-radius:50%;object-fit:cover;background:#f7f5f2}.ci-fridge-tag{font-size:10px;background:#e3f5ea;color:var(--green);border-radius:6px;padding:1px 6px;font-weight:700}</style>
 </head>
 <body>
 <header>
@@ -256,6 +256,7 @@ Recettes : TheMealDB + Données METRO France (metro.fr) – CC-BY 4.0
 <button type="button" class="type-choice" onclick="chooseType('Starter')"><span class="tc-emoji">🥗</span>Entrée</button>
 <button type="button" class="type-choice" onclick="chooseType('Main')"><span class="tc-emoji">🍽️</span>Plat</button>
 <button type="button" class="type-choice" onclick="chooseType('Dessert')"><span class="tc-emoji">🍰</span>Dessert</button>
+<button type="button" class="type-choice" onclick="chooseType('Create')"><span class="tc-emoji">✏️</span>Créer</button>
 </div>
 </div>
 <div id="step2" style="display:none">
@@ -285,6 +286,45 @@ Recettes : TheMealDB + Données METRO France (metro.fr) – CC-BY 4.0
 </div>
 <button type="button" class="back-btn" onclick="backToStep2()">← Changer de cuisine</button>
 </div>
+<div id="stepCreate" style="display:none">
+<div class="field">
+<label>Nom de la recette</label>
+<input id="crName" placeholder="Ex : Ma tarte préférée">
+</div>
+<div class="field">
+<label>Type</label>
+<select id="crType" class="ticket-select">
+<option value="Apero">🥂 Apéro</option>
+<option value="Starter">🥗 Entrée</option>
+<option value="Main" selected>🍽️ Plat</option>
+<option value="Dessert">🍰 Dessert</option>
+</select>
+</div>
+<div class="field">
+<label>Description / Instructions</label>
+<textarea id="crDesc" placeholder="Décris ta recette, les étapes..."></textarea>
+</div>
+<div class="field">
+<label>Photo (optionnel)</label>
+<input type="file" id="crPhotoCam" accept="image/*" capture="environment" style="display:none" onchange="onCreatePhoto(event)">
+<input type="file" id="crPhotoGal" accept="image/*" style="display:none" onchange="onCreatePhoto(event)">
+<div class="create-photo-btns">
+<button type="button" class="btn btn-secondary" style="flex:1" onclick="document.getElementById('crPhotoCam').click()">📷 Photo</button>
+<button type="button" class="btn btn-secondary" style="flex:1" onclick="document.getElementById('crPhotoGal').click()">🖼️ Galerie</button>
+</div>
+<img id="crPhotoPreview" class="create-photo-preview" style="display:none" alt="aperçu">
+</div>
+<div class="field">
+<label>Ingrédients</label>
+<div class="create-ing-list" id="crIngList"></div>
+<div class="create-ing-search">
+<input id="crIngSearch" placeholder="Rechercher un ingrédient..." autocomplete="off" oninput="onCreateIngSearch()">
+</div>
+<div class="create-ing-results" id="crIngResults"></div>
+<div class="hint" style="margin-top:4px">💡 Les ingrédients du frigo sont proposés en haut.</div>
+</div>
+<button type="button" class="back-btn" onclick="backToType()">← Changer de type</button>
+</div>
 <div class="field" id="servingsField" style="display:none">
 <label>Pour combien de personnes ?</label>
 <div class="servings">
@@ -299,7 +339,7 @@ Recettes : TheMealDB + Données METRO France (metro.fr) – CC-BY 4.0
 </div>
 </div>
 </div>
-<script>const APP_VERSION = "1.34.0";
+<script>const APP_VERSION = "1.35.0";
 const GEMINI_KEY = ["AQ.", "Ab8RN6LNj_qwe", "HzNsF3YVNdjcN4", "P0l2Xqs_8U7", "GGxPOtmGZj2Q"].join("");
 const GEMINI_MODEL = "gemini-3.5-flash";
 const DEFAULT_RECIPES = [];
@@ -314,7 +354,7 @@ return fallback;
 function validRecipes(v) {
 if (!Array.isArray(v)) return DEFAULT_RECIPES.slice();
 return v.filter(r => r && typeof r.id === "string" && typeof r.name === "string" && Array.isArray(r.ingredients))
-.map(r => ({ id: String(r.id).slice(0, 64), name: String(r.name).slice(0, 120), emoji: typeof r.emoji === "string" ? r.emoji.slice(0, 8) : "", ingredients: r.ingredients.map(i => String(i).slice(0, 120)), servings: typeof r.servings === "number" ? Math.max(1, Math.min(12, r.servings)) : 4, type: typeof r.type === "string" ? r.type.slice(0, 16) : null, image: typeof r.image === "string" ? r.image.slice(0, 500) : "", instructions: typeof r.instructions === "string" ? r.instructions.slice(0, 4000) : "" }));
+.map(r => ({ id: String(r.id).slice(0, 64), name: String(r.name).slice(0, 120), emoji: typeof r.emoji === "string" ? r.emoji.slice(0, 8) : "", ingredients: r.ingredients.map(i => String(i).slice(0, 120)), servings: typeof r.servings === "number" ? Math.max(1, Math.min(12, r.servings)) : 4, type: typeof r.type === "string" ? r.type.slice(0, 16) : null, image: typeof r.image === "string" ? r.image.slice(0, 200000) : "", instructions: typeof r.instructions === "string" ? r.instructions.slice(0, 4000) : "" }));
 }
 function validStrArray(v) {
 return Array.isArray(v) ? v.filter(x => typeof x === "string").map(x => x.slice(0, 256)) : [];
@@ -898,7 +938,28 @@ const AREA_META = {
 function chooseType(t) {
 currentType = t;
 document.getElementById("step1").style.display = "none";
+if (t === "Create") {
+document.getElementById("stepCreate").style.display = "";
+document.getElementById("step2").style.display = "none";
+document.getElementById("step3").style.display = "none";
+document.getElementById("modalTitle").textContent = "Créer une recette";
+document.getElementById("crName").value = "";
+document.getElementById("crDesc").value = "";
+document.getElementById("crType").value = "Main";
+document.getElementById("crIngSearch").value = "";
+document.getElementById("crPhotoPreview").style.display = "none";
+document.getElementById("crPhotoPreview").src = "";
+createRecipePhoto = null;
+createRecipeIngredients = [];
+renderCreateIngList();
+const _fi = fridgeIngredientsForCreate("");
+renderCreateIngResults(_fi.length ? _fi : allKnownIngredients("").slice(0, 20));
+setTimeout(() => document.getElementById("crName").focus(), 50);
+return;
+}
 document.getElementById("step2").style.display = "";
+document.getElementById("stepCreate").style.display = "none";
+document.getElementById("modalTitle").textContent = "Ajouter";
 renderAreaChoices();
 }
 function renderAreaChoices() {
@@ -921,7 +982,9 @@ showSuggestions();
 }
 function backToType() {
 document.getElementById("step2").style.display = "none";
+document.getElementById("stepCreate").style.display = "none";
 document.getElementById("step1").style.display = "";
+document.getElementById("modalTitle").textContent = "Ajouter";
 }
 function backToStep2() {
 document.getElementById("step3").style.display = "none";
@@ -1120,6 +1183,7 @@ currentArea = null;
 document.getElementById("step1").style.display = "";
 document.getElementById("step2").style.display = "none";
 document.getElementById("step3").style.display = "none";
+document.getElementById("stepCreate").style.display = "none";
 window._pickedMeal = null;
 document.getElementById("manualFields").style.display = "none";
 document.getElementById("servingsField").style.display = "none";
@@ -1135,6 +1199,7 @@ function closeModal() {
 document.getElementById("modalBg").classList.remove("open");
 }
 function saveRecipe() {
+if (currentType === "Create") { saveCreatedRecipe(); return; }
 const name = document.getElementById("fName").value.trim();
 const emoji = "";
 const ingredients = document.getElementById("fIngredients").value
@@ -1150,11 +1215,135 @@ save();
 closeModal();
 renderRecipes();
 }
+let createRecipePhoto = null;
+let createRecipeIngredients = [];
+function onCreatePhoto(ev) {
+const f = ev.target.files && ev.target.files[0];
+if (!f) return;
+const reader = new FileReader();
+reader.onload = async e => {
+createRecipePhoto = await compressPhoto(e.target.result, 480, 0.7);
+const img = document.getElementById("crPhotoPreview");
+img.src = createRecipePhoto;
+img.style.display = "";
+};
+reader.readAsDataURL(f);
+}
+function renderCreateIngList() {
+const el = document.getElementById("crIngList");
+if (!el) return;
+if (!createRecipeIngredients.length) {
+el.innerHTML = `<div class="hint">Aucun ingrédient ajouté.</div>`;
+return;
+}
+el.innerHTML = createRecipeIngredients.map((it, i) => `
+<div class="create-ing-row">
+<img src="${ingredientImgUrl(it.name)}" alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'di-ph',textContent:'🥒',style:'font-size:16px'}))">
+<span class="ci-name">${escapeHtml(it.line)}</span>
+${it.fromFridge ? '<span class="ci-fridge-tag">frigo</span>' : ''}
+<button type="button" class="ci-del" onclick="removeCreateIng(${i})">×</button>
+</div>`).join("");
+}
+function removeCreateIng(i) {
+createRecipeIngredients.splice(i, 1);
+renderCreateIngList();
+}
+let createIngSearchTimer = null;
+function onCreateIngSearch() {
+const q = document.getElementById("crIngSearch").value.trim().toLowerCase();
+clearTimeout(createIngSearchTimer);
+if (q.length < 2) {
+const fridgeItems = fridgeIngredientsForCreate("");
+renderCreateIngResults(fridgeItems.length ? fridgeItems : allKnownIngredients("").slice(0, 20));
+return;
+}
+createIngSearchTimer = setTimeout(() => {
+const fridgeItems = fridgeIngredientsForCreate(q);
+const knownItems = allKnownIngredients(q).filter(k => !fridgeItems.some(f => canonName(f.name) === canonName(k.name)));
+renderCreateIngResults([...fridgeItems, ...knownItems].slice(0, 30));
+}, 200);
+}
+function fridgeIngredientsForCreate(query) {
+const seen = new Set();
+const out = [];
+for (const f of fridge) {
+const name = displayName(cleanFridgeName(f.name || "")) || cleanFridgeName(f.name || "");
+if (!name) continue;
+const key = canonName(name);
+if (seen.has(key)) continue;
+seen.add(key);
+const basis = f.basis || "pc";
+const qtyTxt = basis === "g" ? (f.qty >= 1000 ? (Math.round(f.qty / 100) / 10) + " kg" : Math.round(f.qty) + " g") : basis === "ml" ? (f.qty >= 1000 ? (Math.round(f.qty / 100) / 10) + " L" : Math.round(f.qty) + " ml") : f.qty + " pc";
+if (query && !name.toLowerCase().includes(query) && !key.includes(query)) continue;
+out.push({ name, line: qtyTxt + " de " + name, fromFridge: true });
+}
+return out;
+}
+function allKnownIngredients(query) {
+const names = new Set();
+try { for (const it of buildAggregated()) names.add(displayName(it.name) || it.name); } catch (e) {}
+for (const m of (DB.meals || [])) for (const i of (m.ingredients || [])) {
+const dn = displayName(i) || i;
+if (dn) names.add(dn);
+}
+let list = [...names].filter(n => n && (!query || n.toLowerCase().includes(query) || canonName(n).includes(query)));
+list.sort((a, b) => a.localeCompare(b, "fr"));
+return list.slice(0, 30).map(n => ({ name: n, line: n, fromFridge: false }));
+}
+function renderCreateIngResults(items) {
+const res = document.getElementById("crIngResults");
+if (!res) return;
+if (!items.length) { res.innerHTML = `<div class="hint">Rien trouvé.</div>`; return; }
+res.innerHTML = items.map((it, i) => `
+<div class="create-ing-result" onclick="addCreateIng(${i})">
+<img src="${ingredientImgUrl(it.name)}" alt="" loading="lazy" onerror="this.style.display='none'">
+<span style="flex:1">${escapeHtml(it.line)}</span>
+${it.fromFridge ? '<span class="ci-fridge-tag">frigo</span>' : ''}
+</div>`).join("");
+window._createIngResults = items;
+}
+function addCreateIng(i) {
+const items = window._createIngResults || [];
+const it = items[i];
+if (!it) return;
+const key = canonName(it.name);
+if (createRecipeIngredients.some(x => canonName(x.name) === key)) {
+document.getElementById("crIngSearch").value = "";
+document.getElementById("crIngResults").innerHTML = "";
+return;
+}
+createRecipeIngredients.push(it);
+renderCreateIngList();
+document.getElementById("crIngSearch").value = "";
+document.getElementById("crIngResults").innerHTML = "";
+}
+function saveCreatedRecipe() {
+const name = document.getElementById("crName").value.trim();
+const desc = document.getElementById("crDesc").value.trim();
+const type = document.getElementById("crType").value;
+if (!name) { alert("Le nom est requis."); return; }
+if (!createRecipeIngredients.length) { alert("Ajoute au moins un ingrédient."); return; }
+const ingredients = createRecipeIngredients.map(it => it.line);
+recipes.push({
+id: "r" + Date.now(),
+name,
+emoji: "✏️",
+ingredients,
+servings: 4,
+type,
+image: createRecipePhoto || "",
+instructions: desc
+});
+save();
+closeModal();
+renderRecipes();
+}
 function escapeHtml(s) {
 return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 function safeImgUrl(u) {
 const s = String(u || "");
+if (/^data:image\/(jpeg|png|webp);base64,/.test(s)) return s.slice(0, 200000);
 return /^https:\/\/[^\s"<>]+$/.test(s) ? s : "";
 }
 function safeId(s) {

@@ -9,7 +9,7 @@ Un seul fichier applicatif : `index.html` (HTML+CSS+JS vanilla, ~200 Ko, aucune 
 
 ## Règles d'or du développement
 1. **Toujours tester avant de pousser** : `node -e "const js = require('fs').readFileSync('index.html','utf8').match(/<script>([\s\S]*)<\/script>/)[1]; new Function(js);"` doit afficher SYNTAX OK. Puis un test fonctionnel avec un harnais (voir section Tests). Si db.json modifié : `node -e "JSON.parse(require('fs').readFileSync('db.json','utf8'))"`.
-2. **Version bump à chaque déploiement** : incrémenter `APP_VERSION` (actuellement 1.29.0, ligne ~304). Elle sert d'anti-cache (`db.json?v=` + version).
+2. **Version bump à chaque déploiement** : incrémenter `APP_VERSION` (actuellement 1.35.0, ligne ~339). Elle sert d'anti-cache (`db.json?v=` + version).
 3. **Déployer** : commit sur `main` → GitHub Pages rebuild automatiquement (~1-2 min). Vérifier avec `gh api repos/HaroldLev/BulkaLab_MiamMiam/pages/builds/latest --jq '.status'` = "built".
 4. **L'utilisateur recharge depuis son iPhone** : le user doit tuer l'app dans le multitâche et rouvrir pour voir la nouvelle version.
 
@@ -106,6 +106,7 @@ const mod = eval('(function(){' + js + '; return { fonctionsATester };})()');
 - Recettes METRO : licence CC-BY 4.0, l'attribution est dans le footer de l'app — **ne pas la retirer**.
 
 ## Historique des versions
+- 1.35.0 : 5ème catégorie "Créer" dans Ajouter recette — création perso (nom, type, description, photo compressée, ingrédients du frigo + recherche liste complète), pop-up dédiée
 - 1.29.0 : nettoyage des descriptions inutiles (hints explicatifs, sous-titres cuisines/magasins/sources, détails verbeux) — rebase au-dessus de v1.28.0 (footer dynamique, matching frigo IA, etc.)
 - 1.28.0 : Frigo : pop-up édition (nom+qte+unité) au clic + fusion doublons + pluriels canon
 - 1.27.0 : Frigo : sélection multiple + suppression groupée + ajout en pop-up modale
