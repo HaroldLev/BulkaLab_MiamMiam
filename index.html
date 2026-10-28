@@ -58,9 +58,11 @@ header h1{font-size:22px;font-weight:700}.tabs{display:flex;gap:8px;margin-top:1
 .db-source.on .dbs-check{background:var(--primary);border-color:var(--primary);color:white}
 ticket-select, .ticket-select{width:100%;border:1px solid var(--border);border-radius:10px;padding:11px 12px;font-size:16px;background:var(--card);font-family:inherit}
 .ticket-photo{width:100%;max-height:180px;object-fit:contain;border-radius:10px;margin-top:6px;background:#fff}
-.tl-row{display:flex;gap:6px;align-items:center;margin-bottom:6px}
+.tl-row{display:flex;gap:6px;align-items:flex-start;margin-bottom:6px}
 .tl-row input{border:1px solid var(--border);border-radius:8px;padding:8px;font-size:14px;background:var(--card);font-family:inherit}
-.tl-name{flex:2.2}.tl-qty{flex:1;width:100%}.tl-unit{flex:1;width:100%}.tl-price{flex:1;width:100%}
+.tl-namewrap{flex:2.2;display:flex;flex-direction:column;gap:2px}
+.tl-name{width:100%}.tl-qty{flex:1;width:100%}.tl-unit{flex:1;width:100%}.tl-price{flex:1;width:100%}
+.tl-label{font-size:11px;color:var(--muted);padding:0 2px;min-height:14px;line-height:1.2}
 .tl-del{border:none;background:none;color:#d33;font-size:17px;padding:4px;cursor:pointer}
 .ticket-hist{display:flex;gap:10px;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:8px;margin-bottom:8px}
 .ticket-hist img{width:44px;height:44px;object-fit:cover;border-radius:8px;background:#f7f5f2}
@@ -301,7 +303,7 @@ Recettes : TheMealDB + Données METRO France (metro.fr) – CC-BY 4.0
 </div>
 </div>
 </div>
-<script>const APP_VERSION = "1.29.0";
+<script>const APP_VERSION = "1.30.0";
 const GEMINI_KEY = ["AQ.", "Ab8RN6LNj_qwe", "HzNsF3YVNdjcN4", "P0l2Xqs_8U7", "GGxPOtmGZj2Q"].join("");
 const GEMINI_MODEL = "gemini-3.5-flash";
 const DEFAULT_RECIPES = [];
@@ -1168,7 +1170,7 @@ function addTicketLine(prefill) {
 const lines = document.getElementById("ticketLines");
 const row = document.createElement("div");
 row.className = "tl-row";
-row.innerHTML = `<input class="tl-name" placeholder="Produit" list="ingDatalist" value="${prefill ? escapeAttr(prefill.name || "") : ""}">
+row.innerHTML = `<div class="tl-namewrap"><input class="tl-name" placeholder="Produit" list="ingDatalist" value="${prefill ? escapeAttr(prefill.name || "") : ""}"><div class="tl-label">${prefill && prefill.label ? escapeHtml(prefill.label) : ""}</div></div>
 <input class="tl-qty" type="number" inputmode="decimal" placeholder="Qté" value="${prefill ? (prefill.qty || "") : ""}">
 <select class="tl-unit ticket-select">
 <option value="g"${prefill && prefill.unit === "g" ? " selected" : ""}>g</option>
@@ -1214,7 +1216,9 @@ const price = parseFloat(String(row.querySelector(".tl-price").value).replace(",
 if (!name || price <= 0) continue;
 const nq = normalizeQty(qtyRaw, unit);
 const key = normalizeName(name);
-items.push({ name, key, qty: nq ? nq.amount : null, basis: nq ? nq.basis : null, price });
+const rawName = row.querySelector(".tl-label") ? row.querySelector(".tl-label").textContent.trim() : "";
+const fridgeName = rawName || name;
+items.push({ name, key, fridgeName, qty: nq ? nq.amount : null, basis: nq ? nq.basis : null, price });
 total += price;
 if (nq) {
 if (!userPrices[key]) userPrices[key] = {};
@@ -1226,7 +1230,7 @@ if (items.length === 0) { alert("Ajoute au moins un produit avec un prix."); ret
 tickets.unshift({ id: "T" + Date.now(), storeId, photo: ticketPhotoThumb || null, items, total: Math.round(total * 100) / 100, date: Date.now() });
 for (const it of items) {
 if (it.qty == null) continue;
-addFridgeItem(it.key, it.name, it.qty, it.basis, "ticket");
+addFridgeItem(it.key, it.fridgeName || it.name, it.qty, it.basis, "ticket");
 }
 let savedOk = false;
 try { saveTicketData(); savedOk = true; } catch (e) {
@@ -1512,9 +1516,32 @@ return items;
 const GEMINI_PROMPT = `Tu es un extracteur de données de tickets de caisse français. Analyse ce ticket de caisse photo.
 
 EXTRAIS UNIQUEMENT les produits achetés (une seule ligne par produit réel, PAS les lignes de catégorie).
-Pour chaque produit : nom (nettoie les codes interne), qty (nombre, "" si inconnu), unit (kg/g/ml/L/pc), price (nombre en euros).
+Pour chaque produit : nom (nettoie les codes internes), label, qty (nombre, "" si inconnu), unit (kg/g/ml/L/pc), price (nombre en euros).
 
-RÈGLES :
+CHAMP "label" (OBLIGATOIRE) : un nom court, simple et intelligible en français, tel qu'on le dirait à l'oral, sans marque, sans code, sans quantité, sans qualité superflue (bio, frais, extra...). C'est ce nom qui s'affichera dans le frigo.
+Exemples de "label" :
+- "MUESLI SUPERFRUITS BIO 375G" / "MUÜSLI CÉRÉALES BIO 375G" → "muesli"
+- "YAOURT NATURE 4X125G" / "4 YAOURTS NATURE 125G" → "yaourt"
+- "ESCALOPE DE POULET 2 UNITÉS" / "BLANC DE POULET" → "poulet"
+- "POMMES GOLDEN 1KG" / "POMME GOLDEN DELICIOUS" → "pomme"
+- "LAIT DEMI-ÉCRÉMÉ UHT 1L" / "LAIT 1/2 ECRM UHT" → "lait"
+- "HUILE D'OLIVE VIERGE EXTRA 75CL" → "huile d'olive"
+- "OIGNONS JAUNES 1KG" → "oignon"
+- "CAROTTES VRAC 1KG" → "carotte"
+- "PAIN DE CAMPAGNE" → "pain"
+- "BANANES VRAC" → "banane"
+- "TOMATES GRAPPE 500G" → "tomate"
+- "EMINCÉ DE BŒUF 300G" / "BŒUF HACHÉ 5% MG" → "bœuf haché"
+- "JAMBON BLANC 4 TRANCHES" → "jambon"
+- "FROMAGE RAPÉ 200G" / "EMMENTAL RAPE" → "fromage râpé"
+- "SUCRE EN POUDRE 1KG" → "sucre"
+- "CAFÉ MOULU 250G" → "café"
+- "LESSIVE LIQUIDE 3L" → "lessive"
+- "DENTIFRICE" → "dentifrice"
+- "PQ essuie-tout x6" / "ROULEAUX ESSUIE-TOUT" → "essuie-tout"
+Si tu ne trouves pas de label simple, mets "" (vide).
+
+RÈGLES qty/unit :
 - "MUESLI SUPERFRUITS BIO 375G" → qty: 0.375, unit: "kg"
 - "4X150G" (pack de 4 yaourts de 150g) → qty: 600, unit: "g"
 - "750ML" → qty: 750, unit: "ml"
@@ -1523,7 +1550,7 @@ RÈGLES :
 - Identifie aussi le magasin : "store" parmi lidl/leclerc/intermarche/superu/carrefour/casino/monoprix/bio ou "autre"
 
 Réponds UNIQUEMENT avec un JSON valide, sans markdown ni texte autour :
-{"store":"...","items":[{"name":"...","qty":"...","unit":"kg|g|ml|L|pc","price":0.00}]}`;
+{"store":"...","items":[{"name":"...","label":"...","qty":"...","unit":"kg|g|ml|L|pc","price":0.00}]}`;
 
 function extractJson(text) {
 const clean = text.replace(/```json|```/g, "").trim();
@@ -1568,7 +1595,7 @@ return { items: items, store: null };
 function applyScanResult(result) {
 document.getElementById("ticketLines").innerHTML = "";
 for (const it of result.items) {
-addTicketLine({ name: it.name, qty: it.qty, unit: it.unit, price: it.price });
+addTicketLine({ name: it.label || it.name, label: it.label && it.label !== it.name ? it.name : "", qty: it.qty, unit: it.unit, price: it.price });
 }
 if (result.store) {
 const sel = document.getElementById("ticketStore");
