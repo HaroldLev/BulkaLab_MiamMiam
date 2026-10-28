@@ -126,7 +126,7 @@ ticket-select, .ticket-select{width:100%;border:1px solid var(--border);border-r
 </main>
 <main id="viewFridge" class="hidden">
 <div class="section-title">Mon frigo / placards</div>
-<div class="hint" style="margin-bottom:8px">Touche un produit pour le sélectionner, ou coche la case.</div>
+<div class="hint" style="margin-bottom:8px">Touche un produit pour modifier sa quantité · coche la case pour le sélectionner.</div>
 <div id="fridgeList"></div>
 </main>
 <datalist id="ingDatalist"></datalist>
@@ -215,6 +215,23 @@ ticket-select, .ticket-select{width:100%;border:1px solid var(--border);border-r
 </div>
 </div>
 </div>
+<div class="modal-bg" id="fridgeEditBg" onclick="if(event.target===this)closeFridgeEdit()">
+<div class="modal" style="max-width:520px">
+<h2>✏️ Modifier</h2>
+<div class="field"><label>Produit</label><input id="feName" placeholder="Ex : Lait" list="ingDatalist"></div>
+<div style="display:flex;gap:8px">
+<div class="field" style="flex:1"><label>Quantité</label><input id="feQty" type="number" inputmode="decimal" placeholder="2"></div>
+<div class="field" style="flex:1"><label>Unité</label>
+<select id="feUnit" class="ticket-select">
+<option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="L">L</option><option value="pc" selected>pièce(s)</option>
+</select></div>
+</div>
+<div class="modal-actions">
+<button class="btn btn-secondary" onclick="closeFridgeEdit()">Annuler</button>
+<button class="btn btn-primary" onclick="saveFridgeEdit()">Enregistrer</button>
+</div>
+</div>
+</div>
 <footer id="footerRecipes">
 <button class="btn btn-secondary" id="btnClear" onclick="clearSelection()">Tout retirer</button>
 <button class="btn btn-primary" id="btnGenerate" onclick="showTab('list')" disabled>🛒 Voir ma liste</button>
@@ -290,7 +307,7 @@ Recettes : TheMealDB + Données METRO France (metro.fr) – CC-BY 4.0
 </div>
 </div>
 </div>
-<script>const APP_VERSION = "1.27.0";
+<script>const APP_VERSION = "1.28.0";
 const GEMINI_KEY = ["AQ.", "Ab8RN6LNj_qwe", "HzNsF3YVNdjcN4", "P0l2Xqs_8U7", "GGxPOtmGZj2Q"].join("");
 const GEMINI_MODEL = "gemini-3.5-flash";
 const DEFAULT_RECIPES = [];
@@ -456,10 +473,10 @@ return Object.values(map).sort((a, b) => a.name.localeCompare(b.name, "fr"));
 }
 const NAME_SYNONYMS = {
 "oeuf":"oeuf","oeufs":"oeuf","oeuf entier":"oeuf",
-"tomate":"tomate","tomates":"tomate","tomate cerise":"tomate cerise","tomates cerises":"tomate cerise","tomates cerise":"tomate cerise",
-"oignon":"oignon","oignons":"oignon","oignon rouge":"oignon rouge","oignons rouges":"oignon rouge","oignon jaune":"oignon","oignons jaunes":"oignon","echalote":"oignon rouge","echalotes":"oignon rouge",
+"tomate":"tomate","tomates":"tomate","tomate cerise":"tomate cerise","tomates cerises":"tomate cerise","tomates cerise":"tomate cerise","tomates cerise":"tomate cerise",
+"oignon":"oignon","oignons":"oignon","oignon rouge":"oignon rouge","oignons rouges":"oignon rouge","oignon jaune":"oignon","oignons jaunes":"oignon","oignon jaune":"oignon","oignons jaune":"oignon","echalote":"oignon rouge","echalotes":"oignon rouge",
 "ail":"ail","gousse d'ail":"ail","gousses d'ail":"ail","ail en poudre":"ail",
-"pomme de terre":"pomme de terre","pommes de terre":"pomme de terre","patate":"pomme de terre","patates":"pomme de terre",
+"pomme de terre":"pomme de terre","pommes de terre":"pomme de terre","pommes terre":"pomme de terre","patate":"pomme de terre","patates":"pomme de terre","patates douce":"patate douce","patates douces":"patate douce","poireau":"poireau","poireaux":"poireau","courgette":"courgette","courgettes":"courgette","aubergine":"aubergine","aubergines":"aubergine","poivron":"poivron","poivrons":"poivron","citron":"citron","citrons":"citron","orange":"orange","oranges":"orange","pomme":"pomme","pommes":"pomme","banane":"banane","bananes":"banane","carotte":"carotte","carottes":"carotte","oeuf":"oeuf","oeufs":"oeuf",
 "carotte":"carotte","carottes":"carotte",
 "poulet":"poulet","poulet entier":"poulet","blanc de poulet":"poulet","blancs de poulet":"poulet","cuisses de poulet":"poulet","poulet hache":"poulet",
 "crevette":"crevette","crevettes":"crevette","grosses crevettes":"crevette",
@@ -1295,17 +1312,15 @@ if (!el) return;
 updateFridgeDeleteBtn();
 if (!fridge.length) { el.innerHTML = `<div class="empty">Ton frigo est vide. Enregistre un ticket ou ajoute des produits à la main.</div>`; return; }
 const fmt = f => f.basis === "g" ? (f.qty >= 1000 ? (Math.round(f.qty / 100) / 10) + " kg" : Math.round(f.qty) + " g") : f.basis === "ml" ? (f.qty >= 1000 ? (Math.round(f.qty / 100) / 10) + " L" : Math.round(f.qty) + " ml") : f.qty + " pièce(s)";
-el.innerHTML = fridge.map((f, i) => `<div class="fridge-item ${fridgeSel.includes(i) ? "sel" : ""}" onclick="toggleFridgeSel(${i})">
+el.innerHTML = fridge.map((f, i) => `<div class="fridge-item ${fridgeSel.includes(i) ? "sel" : ""}">
 <input type="checkbox" ${fridgeSel.includes(i) ? "checked" : ""} onclick="event.stopPropagation();toggleFridgeSel(${i})">
-<img src="${ingredientImgUrl(f.name)}" alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'di-ph',textContent:'🥕'}))">
-<div style="flex:1">
+<div style="flex:1;cursor:pointer" onclick="openFridgeEdit(${i})">
 <div class="ing-name">${escapeHtml(f.name)}</div>
-<div class="fi-date">ajouté le ${new Date(f.date).toLocaleDateString("fr-FR")}</div>
+<div class="fi-date">ajouté le ${new Date(f.date).toLocaleDateString("fr-FR")} · touche pour modifier</div>
 </div>
-<span class="fi-qty">${fmt(f)}</span>
+<span class="fi-qty" style="cursor:pointer" onclick="openFridgeEdit(${i})">${fmt(f)}</span>
 </div>`).join("");
-}
-function toggleFridgeSel(i) {
+}function toggleFridgeSel(i) {
 const k = fridgeSel.indexOf(i);
 if (k === -1) fridgeSel.push(i); else fridgeSel.splice(k, 1);
 renderFridge();
@@ -1334,6 +1349,64 @@ setTimeout(() => document.getElementById("fridgeName").focus(), 50);
 }
 function closeFridgeModal() {
 document.getElementById("fridgeModalBg").classList.remove("open");
+}
+let fridgeEditIdx = -1;
+function basisToUnit(basis) {
+if (basis === "g") return "kg";
+if (basis === "ml") return "L";
+return "pc";
+}
+function unitToBasis(unit) {
+if (unit === "kg" || unit === "g") return "g";
+if (unit === "L" || unit === "ml") return "ml";
+return "pc";
+}
+function openFridgeEdit(i) {
+fridgeEditIdx = i;
+const f = fridge[i];
+if (!f) return;
+const unit = basisToUnit(f.basis);
+const q = f.basis === "g" ? Math.round(f.qty / 1000 * 100) / 100 : f.basis === "ml" ? Math.round(f.qty / 1000 * 100) / 100 : f.qty;
+document.getElementById("feName").value = f.name;
+document.getElementById("feQty").value = q;
+document.getElementById("feUnit").value = unit;
+document.getElementById("fridgeEditBg").classList.add("open");
+}
+function closeFridgeEdit() {
+document.getElementById("fridgeEditBg").classList.remove("open");
+fridgeEditIdx = -1;
+}
+function saveFridgeEdit() {
+const i = fridgeEditIdx;
+if (i < 0 || i >= fridge.length) { closeFridgeEdit(); return; }
+const old = fridge[i];
+const name = document.getElementById("feName").value.trim();
+const qtyRaw = document.getElementById("feQty").value;
+const unit = document.getElementById("feUnit").value;
+if (!name || !qtyRaw) { alert("Donne un produit et une quantité."); return; }
+const nq = normalizeQty(qtyRaw, unit);
+if (!nq) { alert("Quantité invalide."); return; }
+const clean = cleanFridgeName(name);
+const ckey = canonName(clean);
+// si on change de base (ex: g -> pc) ou de nom vers un produit existant: fusionner
+if (ckey === old.key && nq.basis === old.basis) {
+old.qty = nq.amount;
+old.name = clean;
+} else {
+const ex = fridge.find((f, k) => k !== i && f.key === ckey && f.basis === nq.basis);
+if (ex) {
+ex.qty += nq.amount;
+ex.date = Date.now();
+if (ex.name !== clean) ex.name = clean;
+fridge.splice(i, 1);
+fridgeSel = fridgeSel.filter(k => k !== i).map(k => k > i ? k - 1 : k);
+} else {
+fridge[i] = { key: ckey, name: clean, qty: nq.amount, basis: nq.basis, origin: old.origin || "manuel", date: Date.now() };
+}
+}
+saveTicketData();
+renderFridge();
+closeFridgeEdit();
 }
 
 function realPriceFor(key, storeId) {
