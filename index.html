@@ -72,7 +72,7 @@ ticket-select, .ticket-select{width:100%;border:1px solid var(--border);border-r
 .fridge-item .di-ph{width:36px;height:36px;border-radius:50%;background:#fff4f0;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
 .fridge-item .fi-qty{font-weight:700;font-size:15px;white-space:nowrap}
 .fridge-item .fi-date{font-size:11px;color:var(--muted)}
-.fridge-item .fi-del{border:none;background:none;color:#d33;font-size:17px;cursor:pointer;padding:4px}
+.fridge-item .fi-del{border:none;background:none;color:#d33;font-size:17px;cursor:pointer;padding:4px}.fridge-item.sel{border-color:var(--primary);background:#fff4f0}.fridge-item input[type=checkbox]{width:20px;height:20px;accent-color:var(--green);flex-shrink:0}
 .price-real{color:var(--green);font-size:10px;font-weight:700}
 .result-hint{font-size:12px;color:var(--muted);margin:4px 2px}.loading{text-align:center;color:var(--muted);padding:14px;font-size:14px}</style>
 </head>
@@ -126,16 +126,8 @@ ticket-select, .ticket-select{width:100%;border:1px solid var(--border);border-r
 </main>
 <main id="viewFridge" class="hidden">
 <div class="section-title">Mon frigo / placards</div>
+<div class="hint" style="margin-bottom:8px">Touche un produit pour le sélectionner, ou coche la case.</div>
 <div id="fridgeList"></div>
-<div class="section-title" style="margin-top:14px">Ajouter à la main</div>
-<div class="field"><label>Produit</label><input id="fridgeName" placeholder="Ex : Lait" list="ingDatalist"></div>
-<div style="display:flex;gap:8px">
-<div class="field" style="flex:1"><label>Quantité</label><input id="fridgeQty" type="number" inputmode="decimal" placeholder="2"></div>
-<div class="field" style="flex:1"><label>Unité</label>
-<select id="fridgeUnit" class="ticket-select">
-<option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="L">L</option><option value="pc" selected>pièce(s)</option>
-</select></div>
-</div>
 </main>
 <datalist id="ingDatalist"></datalist>
 <div class="modal-bg" id="detailModalBg" onclick="if(event.target===this)closeDetail()">
@@ -206,6 +198,23 @@ ticket-select, .ticket-select{width:100%;border:1px solid var(--border);border-r
 <div id="priceResult" style="display:none"></div>
 </div>
 </div>
+<div class="modal-bg" id="fridgeModalBg" onclick="if(event.target===this)closeFridgeModal()">
+<div class="modal" style="max-width:520px">
+<h2>🧊 Ajouter au frigo</h2>
+<div class="field"><label>Produit</label><input id="fridgeName" placeholder="Ex : Lait" list="ingDatalist"></div>
+<div style="display:flex;gap:8px">
+<div class="field" style="flex:1"><label>Quantité</label><input id="fridgeQty" type="number" inputmode="decimal" placeholder="2"></div>
+<div class="field" style="flex:1"><label>Unité</label>
+<select id="fridgeUnit" class="ticket-select">
+<option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="L">L</option><option value="pc" selected>pièce(s)</option>
+</select></div>
+</div>
+<div class="modal-actions">
+<button class="btn btn-secondary" onclick="closeFridgeModal()">Annuler</button>
+<button class="btn btn-primary" onclick="addToFridge()">Ajouter</button>
+</div>
+</div>
+</div>
 <footer id="footerRecipes">
 <button class="btn btn-secondary" id="btnClear" onclick="clearSelection()">Tout retirer</button>
 <button class="btn btn-primary" id="btnGenerate" onclick="showTab('list')" disabled>🛒 Voir ma liste</button>
@@ -220,7 +229,8 @@ ticket-select, .ticket-select{width:100%;border:1px solid var(--border);border-r
 <button class="btn btn-primary" onclick="saveTicket()">💾 Enregistrer le ticket</button>
 </footer>
 <footer id="footerFridge" class="hidden">
-<button class="btn btn-primary" style="flex:100%" onclick="addToFridge()">🧊 Ajouter au frigo</button>
+<button class="btn btn-secondary" id="btnFridgeDelete" onclick="deleteFridgeSelected()" disabled>🗑️ Supprimer</button>
+<button class="btn btn-primary" onclick="openFridgeModal()">🧊 Ajouter au frigo</button>
 </footer>
 <div style="text-align:center;font-size:10px;color:var(--muted);padding:6px 0 10px;position:fixed;bottom:0;left:0;right:0;pointer-events:none;background:linear-gradient(transparent,var(--bg) 40%)">
 Recettes : TheMealDB + Données METRO France (metro.fr) – CC-BY 4.0
@@ -280,7 +290,7 @@ Recettes : TheMealDB + Données METRO France (metro.fr) – CC-BY 4.0
 </div>
 </div>
 </div>
-<script>const APP_VERSION = "1.26.0";
+<script>const APP_VERSION = "1.27.0";
 const GEMINI_KEY = ["AQ.", "Ab8RN6LNj_qwe", "HzNsF3YVNdjcN4", "P0l2Xqs_8U7", "GGxPOtmGZj2Q"].join("");
 const GEMINI_MODEL = "gemini-3.5-flash";
 const DEFAULT_RECIPES = [];
@@ -322,6 +332,7 @@ localStorage.setItem("recipes", JSON.stringify(recipes));
 localStorage.setItem("selection", JSON.stringify(selection));
 localStorage.setItem("checkedItems", JSON.stringify(checkedItems));
 }
+let fridgeSel = [];
 function showTab(tab) {
 document.getElementById("viewRecipes").classList.toggle("hidden", tab !== "recipes");
 document.getElementById("viewList").classList.toggle("hidden", tab !== "list");
@@ -335,7 +346,9 @@ document.getElementById("btnGenerate").disabled = selection.length === 0;
 const footers = ["footerRecipes", "footerList", "footerTicket", "footerFridge"];
 const footerFor = { recipes: "footerRecipes", list: "footerList", ticket: "footerTicket", fridge: "footerFridge" };
 for (const f of footers) document.getElementById(f).classList.toggle("hidden", f !== footerFor[tab]);
+if (tab !== "fridge" && fridgeSel.length) { fridgeSel = []; renderFridge(); }
 if (tab === "list") renderIngredients();
+if (tab === "fridge") renderFridge();
 window.scrollTo(0, 0);
 }
 function toggleRecipe(id) {
@@ -1273,31 +1286,54 @@ const nq = normalizeQty(qtyRaw, unit);
 addFridgeItem(canonName(cleanFridgeName(name)), name, nq.amount, nq.basis, "manuel");
 saveTicketData();
 renderFridge();
-document.getElementById("fridgeName").value = "";
-document.getElementById("fridgeQty").value = "";
+closeFridgeModal();
 }
 
 function renderFridge() {
 const el = document.getElementById("fridgeList");
 if (!el) return;
+updateFridgeDeleteBtn();
 if (!fridge.length) { el.innerHTML = `<div class="empty">Ton frigo est vide. Enregistre un ticket ou ajoute des produits à la main.</div>`; return; }
 const fmt = f => f.basis === "g" ? (f.qty >= 1000 ? (Math.round(f.qty / 100) / 10) + " kg" : Math.round(f.qty) + " g") : f.basis === "ml" ? (f.qty >= 1000 ? (Math.round(f.qty / 100) / 10) + " L" : Math.round(f.qty) + " ml") : f.qty + " pièce(s)";
-el.innerHTML = fridge.map((f, i) => `<div class="fridge-item">
-<img src="${ingredientImgUrl(f.name)}" alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'di-ph',textContent:'🥕))">
+el.innerHTML = fridge.map((f, i) => `<div class="fridge-item ${fridgeSel.includes(i) ? "sel" : ""}" onclick="toggleFridgeSel(${i})">
+<input type="checkbox" ${fridgeSel.includes(i) ? "checked" : ""} onclick="event.stopPropagation();toggleFridgeSel(${i})">
+<img src="${ingredientImgUrl(f.name)}" alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'di-ph',textContent:'🥕'}))">
 <div style="flex:1">
 <div class="ing-name">${escapeHtml(f.name)}</div>
 <div class="fi-date">ajouté le ${new Date(f.date).toLocaleDateString("fr-FR")}</div>
 </div>
 <span class="fi-qty">${fmt(f)}</span>
-<button class="fi-del" onclick="deleteFridge(${i})">🗑️</button>
 </div>`).join("");
 }
-
-function deleteFridge(i) {
-if (!confirm("Retirer du frigo ?")) return;
-fridge.splice(i, 1);
+function toggleFridgeSel(i) {
+const k = fridgeSel.indexOf(i);
+if (k === -1) fridgeSel.push(i); else fridgeSel.splice(k, 1);
+renderFridge();
+}
+function updateFridgeDeleteBtn() {
+const b = document.getElementById("btnFridgeDelete");
+if (b) {
+b.disabled = fridgeSel.length === 0;
+b.textContent = fridgeSel.length === 0 ? "🗑️ Supprimer" : `🗑️ Supprimer (${fridgeSel.length})`;
+}
+}
+function deleteFridgeSelected() {
+if (!fridgeSel.length) return;
+if (!confirm(`Retirer ${fridgeSel.length} produit(s) du frigo ?`)) return;
+fridgeSel.sort((a, b) => b - a).forEach(i => fridge.splice(i, 1));
+fridgeSel = [];
 saveTicketData();
 renderFridge();
+}
+function openFridgeModal() {
+document.getElementById("fridgeName").value = "";
+document.getElementById("fridgeQty").value = "";
+document.getElementById("fridgeUnit").value = "pc";
+document.getElementById("fridgeModalBg").classList.add("open");
+setTimeout(() => document.getElementById("fridgeName").focus(), 50);
+}
+function closeFridgeModal() {
+document.getElementById("fridgeModalBg").classList.remove("open");
 }
 
 function realPriceFor(key, storeId) {
