@@ -298,7 +298,7 @@ Recettes : TheMealDB + Données METRO France (metro.fr) – CC-BY 4.0
 </div>
 </div>
 </div>
-<script>const APP_VERSION = "1.31.0";
+<script>const APP_VERSION = "1.32.0";
 const GEMINI_KEY = ["AQ.", "Ab8RN6LNj_qwe", "HzNsF3YVNdjcN4", "P0l2Xqs_8U7", "GGxPOtmGZj2Q"].join("");
 const GEMINI_MODEL = "gemini-3.5-flash";
 const DEFAULT_RECIPES = [];
@@ -440,7 +440,7 @@ if (!r) continue;
 for (const line of r.ingredients) {
 const p = parseIngredient(line);
 const key = normalizeName(p.name);
-if (!map[key]) map[key] = { name: p.name, qty: null, unit: null, units: [], count: 0, pieces: [] };
+if (!map[key]) map[key] = { name: displayName(p.name) || p.name, qty: null, unit: null, units: [], count: 0, pieces: [] };
 if (p.qty != null && p.unit == null) {
 map[key].pieces.push(p.qty);
 if (map[key].unit == null) { map[key].qty = p.qty; map[key].unit = null; }
@@ -580,6 +580,56 @@ k = k.replace(/\s+de paris$/i, "");
 k = k.replace(/\s+(de |d')?(paris|dega?|pleurotes?|shiitakes?)$/i, "");
 k = k.replace(/\s+/g, " ").trim();
 return normalizeName(k);
+}
+const DISPLAY_STRIP = [
+  /\s*\([^)]*\)/g,
+  /\s*\[[^\]]*\]/g,
+  /\s*,.*$/,
+  /\s*\/\s*.*$/,
+  /\s+(pour|avec|sans|et|ou|facultatif|obligatoire|au choix|selon|type|style|maison|cuisine|cuisin\u00e9|garniture|d\u00e9coration|service|pr\u00e9sentation|dressage|finition|accompagnement|assaisonnement).*$/i,
+  /\s+(origine|product of|provenance)\s+.*$/i,
+  /\s+de\s+(france|bretagne|normandie|bourgogne|provence|alsace|italie|espagne|portugal|belgique|suisse|maroc|tunisie|chine|japon|thai|tha\u00eflande|inde|mexique|usa|angleterre|allemagne|pologne|turquie|gr\u00e8ce|chili|pays-bas|hollande|irlande|\u00e9cosse|canada|vietnam|cor\u00e9e|liban|isra\u00ebl|palestine|iran|irak|syrie|afrique|am\u00e9rique|madagascar|antilles|guadeloupe|martinique|r\u00e9union|mayotte|guyane|tahiti|corse|sardaigne|sicile|cr\u00e8te|malte|chypre)\b.*$/i,
+  /\s+(des|du|de la|de l'|d')\s+(sables|landes|for\u00eat|foret|montagne|vall\u00e9e|coteaux|terroir|alpage|province|r\u00e9gion|pays|ville|commune|fleuve|lac|rivi\u00e8re|mer|oc\u00e9an|atlantique|m\u00e9diterran\u00e9e|manche|golfe).*$/i,
+  /\s+(nice|savoie|aop|a\.o\.p\.|i\.g\.p\.|label rouge|igp|sturia|sicile|cr\u00e8te|parme|de Parme|de Mod\u00e8ne|de Dijon|de Meaux|de Bresse|de Normandie|d'Isigny|de Gu\u00e9rande|de Camargue|des Landes|des Sables|d'Ard\u00e8che|d'Espelette|de Cayenne|de Sichuan|de Chine|de Ta\u00efwan|de Tha\u00eflande|du P\u00e9rigord|du Gers|du Quercy|du Limousin|d'Auvergne|de Savoie|de Franche-Comt\u00e9|de Bourgogne|de Provence|d'Alsace|de Bretagne|de Corse|de Sicile|de Sardaigne|de Cr\u00e8te|de Gr\u00e8ce|de Turquie|du Japon|de Madagascar|des Antilles|de la R\u00e9union|de Mayotte|de Guyane|du S\u00e9n\u00e9gal|du Mali|du Maroc|d'Espagne|d'Italie|du Portugal|de Belgique|de Suisse|d'Allemagne|de Pologne|d'Angleterre|d'\u00c9cosse|d'Irlande|du Canada|d'Australie|de Nouvelle-Z\u00e9lande|du Vietnam|de Cor\u00e9e|du Liban|d'Isra\u00ebl|de Palestine|d'Iran|d'Irak|de Syrie|d'Afrique|d'Am\u00e9rique|d'Inde|de Tha\u00eflande|de Chine|de Ta\u00efwan)\b.*$/i,
+  /\s+(bio|biologique|naturel|naturelle|pur|pure|vierge|extra vierge|extra-vierge|premi\u00e8re pression|pression \u00e0 froid|tradition|traditionnel|traditionnelle|artisan|artisanal|artisanale|maison|fermier|fermi\u00e8re|paysan|paysanne|local|locale|locaux|r\u00e9gional|r\u00e9gionale|terroir|grand cru|reserve|r\u00e9serve|selection|s\u00e9lection|special|sp\u00e9cial|sp\u00e9ciale|original|originale|authentique|classic|classique|vintage|affin\u00e9|affin\u00e9e|haut de gamme|premium|sup\u00e9rieur|sup\u00e9rieure|qualit\u00e9|fin|fine|bonne|meilleur|meilleure|excellent|excellente|extra|extraordinaire|exceptionnel|exceptionnelle|deluxe|signature|chef|gourmet|gourmande|prestige|prestigieux|prestigieuse|exclusive|exclusif|rare|top|best|meilleur choix|s\u00e9lectionn\u00e9|s\u00e9lectionn\u00e9e)\b.*$/i,
+  /\s+(frais|fra\u00eeche|fra\u00eeches|fraiches|fra\u00eechement|cru|crues|crue|entier|enti\u00e8re|enti\u00e8res|entiers|nature|naturel|naturelle|en poudre|en grains|en branche|en branches|en feuille|en feuilles|en b\u00e2ton|b\u00e2tons|en b\u00e2tonnets|moulu|moulue|moulus|rap\u00e9|r\u00e2p\u00e9|r\u00e2p\u00e9e|hach\u00e9|hach\u00e9e|hach\u00e9es|coup\u00e9|coup\u00e9e|coup\u00e9es|\u00e9minc\u00e9|\u00e9minc\u00e9e|\u00e9minc\u00e9es|pel\u00e9|pel\u00e9e|pel\u00e9es|\u00e9pluch\u00e9|\u00e9pluch\u00e9e|\u00e9pluch\u00e9es|\u00e9cras\u00e9|\u00e9cras\u00e9e|cuit|cuite|cuits|cuites|pr\u00e9cuit|pr\u00e9cuite|pr\u00e9cuits|pr\u00e9cuite|s\u00e9ch\u00e9|s\u00e9ch\u00e9e|s\u00e9ch\u00e9es|s\u00e9ch\u00e9s|d\u00e9shydrat\u00e9|d\u00e9shydrat\u00e9e|d\u00e9shydrat\u00e9es|congel\u00e9|congel\u00e9e|congel\u00e9es|surgel\u00e9|surgel\u00e9e|surgel\u00e9es|liquide|solide|\u00e9pais|\u00e9paisse|dur|durcie|durcis|demi|demi-sel|semi|\u00e9cr\u00e9m\u00e9|sal\u00e9|sal\u00e9e|doux|fort|forte|fortes|\u00e9pic\u00e9|\u00e9pic\u00e9e|vert|verte|vertes|jaune|jaunes|blanc|blanche|blanches|noir|noire|noires|rouge|rouges|rose|roses|orange|violet|violette|marron|grise|gris|bleu|bleue|beige|cr\u00e8me|ivoire|fonc\u00e9|fonc\u00e9e|clair|claire|light|all\u00e9g\u00e9|all\u00e9g\u00e9e|complet|compl\u00e8te|int\u00e9gral|int\u00e9grale)\b.*$/i,
+  /\s+douce$/i,
+  /\s+(sliced|diced|chopped|minced|grated|peeled|mashed|cubed|crushed|ground|fresh|frozen|dried|canned|tinned|jarred|bottled|packaged|pack|bag|box|carton|paquet|sachet|pot|bocal|bo\u00eete|boite|barquette|bouteille|brique|tranches?|branche|branches|feuille|feuilles|grain|grains|gousse|gousses|pi\u00e8ce|pi\u00e8ces|tranche|zeste|zestes|jus|pulpe|chair|filet|filets|escalope|escalopes|blanc|blancs|cuisses?|cuisse|pilon|pillons|aile|ailes|magret|c\u00f4te|c\u00f4tes|entrec\u00f4te|queue|foie|foies|rognon|rognons|langue|t\u00eate|os|arr\u00eate|ar\u00eate|arr\u00eates|peau|peaux|couenne|morceaux|morceau|cube|cubes|rondelle|rondelles|lamelle|lamelles|julienne|batonnets|batonnet|allumette|allumettes|m\u00e9lange|mix|b\u00e2ton|b\u00e2tons|botte|bouquet|branche de|feuilles de|gousses de|tranches de|zeste de|sachet de|paquet de|pot de|bo\u00eete de|barquette de|bouteille de|brique de|plaque de|plaques de|lame|lames|copeau|copeaux|pinc\u00e9e|pinc\u00e9e de|pinc\u00e9es|cuill\u00e8re|cuill\u00e8res|verre|verre de|tasse|tasse de|bol|bol de|assiette|assiette de|poign\u00e9e|poign\u00e9e de|litre|litres|ml|cl|dl|g|kg|gramme|grammes|kilo|kilos|once|onces|oz|lb|lbs|pound|pounds)\b.*$/i,
+  /\s+(uht|u\.h\.t\.|pasteuris\u00e9|pasteuris\u00e9e|st\u00e9rilis\u00e9|st\u00e9rilis\u00e9e|appertis\u00e9|appertis\u00e9e|en conserve|en bocal|en bouteille|en brique|en pot|en sachet|en paquet|en barquette|en boite|en bo\u00eete|au sirop|en sirop|au naturel|en saumure|en marinade|marin\u00e9|marin\u00e9e|en grain|en grains|en poudre|grains?|grain)\b.*$/i,
+  /\s+(petit|petite|petits|petites|grand|grande|grands|grandes|gros|grosse|grosses|moyen|moyenne|moyens|moyennes|mini|minis|jumbo|calibre|gros calibre|petit calibre)\b.*$/i,
+  /\s+(espresso|lungo|corto|ristretto|allong\u00e9|allongee|americano|macchiato|noisette|capuccino|latte|flat white|cafe|cafe creme|deca|decafeine|expresso|expresso lungo|ung o|ungo|lungo|court|long|moyen)\b.*$/i,
+  /\s+\d+(\.\d+)?\s*(g|gr|kg|ml|cl|dl|l|litres?|oz|lb|lbs|cm|mm|%|degr\u00e9s?|\u00b0C|\u00b0F|cal|kcal)\b.*$/i,
+  /\s+(x\s*\d+|\d+\s*x|\d+\s*\/\s*\d+|\d+-\d+|\d+\s*-\s*\d+)\b.*$/i,
+  /\s+(\u00e0 l'ancienne|a l'ancienne|\u00e0 l\u2019ancienne|old style|traditionnelle)\b.*$/i,
+  /\s+(metro|carrefour|lidl|leclerc|intermarche|intermarch\u00e9|super u|superu|casino|monoprix|auchan|aldi|colruyt|delhaize|grand frais|brand|marque|enseigne|distributeur)\b.*$/i,
+  /^\s*(une?|la|le|les|l'|du|de|des|d')\s+/i,
+  /\s{2,}/g
+];
+function displayName(raw) {
+let k = String(raw || "").trim();
+if (!k) return "";
+k = k.replace(/^(\d+(?:[.,]\d+)?\s*(kg|g|gr|grammes?|l|litres?|litre|ml|cl|dl|kilo|kilos)\s+)+(de\s+|du\s+|des\s+|d')?/i, "");
+k = k.replace(/^(\d+(?:\/|-)\d+\s+)+(de\s+|du\s+|des\s+|d')?/i, "");
+k = k.replace(/^(\d+(?:[.,]\d+)?)\s+(de\s+|du\s+|des\s+|d')?/i, "");
+k = k.replace(/^(pack|paquet|lot|coffret|set)\s+(\d+\s*[x\u00d7]\s*)?\d+(?:[.,]\d+)?\s*(g|gr|kg|ml|cl|dl|l|litres?|pieces?|pieces|pc|unites?)\s+/i, "");
+k = k.replace(/^\d+\s*[x\u00d7]\s*\d+(?:[.,]\d+)?\s*(g|gr|kg|ml|cl|dl|l|litres?|pieces?|pieces|pc|unites?)\s+/i, "");
+k = k.replace(/^[-*\u2022\u00b7]+\s*/, "");
+k = k.replace(/^(c\.?\s*[a\u00e0\s]*[sc]\.?|c\.?\s*cas\.?|c\.?\s*[a\u00e0\s]*s\.?|cuill\u00e8re\u00e0\s+(soupe|caf\u00e9|soupe)|cuillere a soupe|cuillere a cafe|cuill\u00e8re \u00e0 soupe|cuill\u00e8re \u00e0 caf\u00e9|cc|cas|cac|c\u00e0s|c\u00e0c|cs|tsp|tbsp|tbs|tbsp\.?|tablespoon|teaspoon|pinch|pinc\u00e9e|pinc\u00e9e de|verre|verre de|tasse|tasse de|bol|bol de|assiette|assiette de|poign\u00e9e|poign\u00e9e de)\s+/i, "");
+k = k.replace(/^\d+\s*(x\s*)?(gousses?|tranches?|branches?|feuilles?|b\u00e2tons?|botte|botte de|bouquet|bouquet de|paquets?|sachets?|bo\u00eetes?|barquettes?|bouteilles?|briques?|plaques?|pi\u00e8ces?|lames?|copeaux?|pinc\u00e9es?|cas|c\u00e0s|c\u00e0c|cc|verre|verres|tasse|tasses|bol|bols|assiette|assiettes|cuill\u00e8res?|cuill\u00e8re \u00e0 soupe|cuill\u00e8re \u00e0 caf\u00e9|unit\u00e9s?|unites?)(\s+de)?\s+/i, "");
+k = k.replace(/^(branches?|feuilles?|gousses?|tranches?|b\u00e2tons?|botte|botte de|bouquet|bouquet de)\s+(de|d')\s+/i, "");
+k = k.replace(/^(une?\s+)?(branche|branches|feuille|feuilles|gousse|gousses|tranche|tranches|b\u00e2ton|b\u00e2tons)\s+(de|d'|au|aux)?\s*/i, "");
+k = k.replace(/\s+\d+\s+unit\u00e9s?\s*$/i, "");
+for (const re of DISPLAY_STRIP) k = k.replace(re, " ");
+k = k.replace(/\s+/g, " ").trim();
+k = k.replace(/^(de|du|des|d'|la|le|les|l')\s+/i, "");
+k = k.replace(/^(maille|ducros|amora|maille|moutarde|maille|moutarde|heinz|nestl\u00e9|nestle|president|pr\u00e9sident|danone|yoplait|lu|bonne maman|bonne maman|ferrero|kellogg's|kelloggs|quaker|lipton|carrefour|lidl|leclerc|intermarch\u00e9|intermarche|super u|superu|casino|monoprix|auchan|aldi|leader price|leaderprice|metro|chef|selection|s\u00e9lection|reflets de france|saint alby|saint-alby|bridelice|bridelic\u00e9|elle & vire|elle et vire|philadelphia|st m\u00f4ret|st moret|boursin|kiri|la vache qui rit|vache qui rit|bel|aby|boursin|ricotta|galbani|zanetti|parmalat|lactalis|candia|bridel|bride| President|pr\u00e9sident|ferrero|nutella|ovaltine|nesquik|nespresso|lavazza|illy|carte noire|carte d'or|grand\u00e8re|arène|malongo|l'or|l\u2019or|maxwell house|maxwell|folgers|illy|lavazza|carte noire|maxwell|nespresso|senseo|dolce gusto|dolcegusto|tassimo|l\u2019or|barista|illy|illy咖啡)\s+/i, "");
+k = k.replace(/\s+(de|du|des|d')$/i, "");
+k = k.replace(/\s+en$/i, "");
+if (/\bpatate$/i.test(k) && /\bdouce\b/i.test(String(raw))) k = k + " douce";
+if (/\bpomme de$/i.test(k) && /\bterre\b/i.test(String(raw))) k = k + " terre";
+k = k.replace(/^-+|-+$/g, "").trim();
+if (!k) k = String(raw || "").trim();
+return k;
 }
 function cleanFridgeName(n) {
 let k = n.trim();
@@ -1105,9 +1155,9 @@ return String(s).replace(/&/g, "&amp;").replace(/'/g, "&#39;").replace(/"/g, "&q
 let tickets = loadJson("tickets", []);
 let fridge = loadJson("fridge", []);
 let detectedStore = null;
-if (fridge.some(f => f.name && f.key !== canonName(cleanFridgeName(f.name)))) {
+if (fridge.some(f => f.name && (f.key !== canonName(cleanFridgeName(f.name)) || f.name !== displayName(cleanFridgeName(f.name))))) {
 fridge = fridge.map(f => {
-const clean = cleanFridgeName(f.name || "");
+const clean = displayName(cleanFridgeName(f.name || "")) || cleanFridgeName(f.name || "");
 return { ...f, name: clean, key: canonName(clean) };
 });
 try { localStorage.setItem("fridge", JSON.stringify(fridge)); } catch (e) {}
@@ -1288,7 +1338,7 @@ renderTickets();
 }
 
 function addFridgeItem(key, name, qty, basis, origin) {
-const clean = cleanFridgeName(name);
+const clean = displayName(cleanFridgeName(name)) || cleanFridgeName(name);
 const ckey = canonName(clean);
 const ex = fridge.find(f => f.key === ckey && f.basis === basis);
 if (ex) { ex.qty += qty; ex.date = Date.now(); if (ex.name !== clean) ex.name = clean; }
@@ -1602,7 +1652,8 @@ function applyScanResult(result) {
 detectedStore = result.store || null;
 document.getElementById("ticketLines").innerHTML = "";
 for (const it of result.items) {
-addTicketLine({ name: it.label || it.name, label: it.label && it.label !== it.name ? it.name : "", qty: it.qty, unit: it.unit, price: it.price });
+const dn = displayName(it.label || it.name) || it.name;
+addTicketLine({ name: dn, label: dn !== it.name ? it.name : "", qty: it.qty, unit: it.unit, price: it.price });
 }
 const st = STORES.find(x => x.id === detectedStore);
 if (st) {
@@ -1752,7 +1803,7 @@ return { amount: 1, basis: "pc" };
 function estimateItemPrice(it, factor, storeId) {
 const key = normalizeName(it.name);
 const real = storeId ? realPriceFor(key, storeId) : null;
-const { rate } = lookupPrice(it.name);
+const { rate } = lookupPrice(displayName(it.name) || it.name);
 const { amount, basis } = estimateAmount(it);
 let price;
 if (real) {
@@ -1791,7 +1842,7 @@ let realCount = 0;
 let skipped = 0;
 items.forEach((it, idx) => {
 if (checkedItems.includes("ing:" + idx)) { skipped++; return; }
-const { known } = lookupPrice(it.name);
+const { known } = lookupPrice(displayName(it.name) || it.name);
 if (known) knownCount++;
 const isReal = !!(storeId && realPriceFor(normalizeName(it.name), storeId));
 if (isReal) realCount++;
@@ -1826,7 +1877,7 @@ const INGREDIENT_IMG_OVERRIDES = {
 "pois chiches": "chickpeas", "pain": "bread", "yaourt": "yoghurt"
 };
 function ingredientImgUrl(name) {
-let k = normalizePriceKey(name);
+let k = normalizePriceKey(displayName(name) || name);
 // retirer quantité en tête : "3 oeufs", "500 g de farine", "2 gousses d'ail"
 k = k.replace(/^\d+(?:[.,]\d+)?\s*(g|gr|kg|ml|cl|dl|l|litres?|c\.?\s*à\s*[sc.]\.?|tbs|tsp|cups?|gousses?|tranches?|branches?|pincées?|feuilles?|pièces?)?\s+(de\s+|d')?/i, "");
 k = k.trim();
@@ -1885,7 +1936,7 @@ h += `<h2 style="margin-bottom:4px">${escapeHtml(r.name)}</h2>`;
 h += `<div class="result-meta" style="margin-bottom:12px">${r.servings || 4} personne(s)${r.type ? " · " + escapeHtml(TYPE_LABELS[r.type] || r.type) : ""} · ${r.ingredients.length} ingrédients</div>`;
 h += `<div class="section-title" style="margin-top:4px">Ingrédients</div>`;
 for (const line of r.ingredients) {
-h += `<div class="detail-ing"><img src="${ingredientImgUrl(line)}" alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'di-ph',textContent:'🥒'}))"><span>${escapeHtml(line)}</span></div>`;
+h += `<div class="detail-ing"><img src="${ingredientImgUrl(line)}" alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'di-ph',textContent:'🥒'}))"><span>${escapeHtml(displayName(line) || line)}</span></div>`;
 }
 if (r.instructions) {
 h += `<div class="section-title">Recette</div>`;
