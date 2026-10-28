@@ -114,15 +114,10 @@ ticket-select, .ticket-select{width:100%;border:1px solid var(--border);border-r
 <img id="ticketPhotoPreview" class="ticket-photo" style="display:none" alt="ticket">
 <button class="btn btn-primary" style="width:100%;margin-top:6px" onclick="scanReceipt()">📷 Scanner le ticket (OCR)</button>
 <div id="scanProgress" class="hint" style="display:none"></div>
-</div>
-<div class="field">
-<label>Magasin</label>
-<select id="ticketStore" class="ticket-select"></select>
+<div id="ticketStoreName" class="hint" style="font-weight:600"></div>
 </div>
 <div class="section-title">Prix relevés</div>
 <div id="ticketLines"></div>
-<button class="btn btn-secondary" style="width:100%;margin-top:6px" onclick="addTicketLine()">➕ Ajouter un produit</button>
-<button class="btn btn-primary" style="width:100%;margin-top:10px" onclick="saveTicket()">💾 Enregistrer le ticket</button>
 <div class="section-title" style="margin-top:16px">Tickets passés</div>
 <div id="ticketHistory"></div>
 </main>
@@ -240,8 +235,8 @@ ticket-select, .ticket-select{width:100%;border:1px solid var(--border);border-r
 <button class="btn btn-primary" onclick="openPriceModal()">💰 Estimer le prix</button>
 </footer>
 <footer id="footerTicket" class="hidden">
-<button class="btn btn-secondary" onclick="addTicketLine()">➕ Ajouter un produit</button>
-<button class="btn btn-primary" onclick="saveTicket()">💾 Enregistrer le ticket</button>
+<button class="btn btn-secondary" onclick="cancelTicket()">❌ Annuler</button>
+<button class="btn btn-primary" onclick="saveTicket()">✅ Valider</button>
 </footer>
 <footer id="footerFridge" class="hidden">
 <button class="btn btn-secondary" id="btnFridgeDelete" onclick="deleteFridgeSelected()" disabled>🗑️ Supprimer</button>
@@ -303,7 +298,7 @@ Recettes : TheMealDB + Données METRO France (metro.fr) – CC-BY 4.0
 </div>
 </div>
 </div>
-<script>const APP_VERSION = "1.30.0";
+<script>const APP_VERSION = "1.31.0";
 const GEMINI_KEY = ["AQ.", "Ab8RN6LNj_qwe", "HzNsF3YVNdjcN4", "P0l2Xqs_8U7", "GGxPOtmGZj2Q"].join("");
 const GEMINI_MODEL = "gemini-3.5-flash";
 const DEFAULT_RECIPES = [];
@@ -1109,6 +1104,7 @@ return String(s).replace(/&/g, "&amp;").replace(/'/g, "&#39;").replace(/"/g, "&q
 // ============ TICKET DE CAISSE & FRIGO ============
 let tickets = loadJson("tickets", []);
 let fridge = loadJson("fridge", []);
+let detectedStore = null;
 if (fridge.some(f => f.name && f.key !== canonName(cleanFridgeName(f.name)))) {
 fridge = fridge.map(f => {
 const clean = cleanFridgeName(f.name || "");
@@ -1123,14 +1119,6 @@ function saveTicketData() {
 localStorage.setItem("tickets", JSON.stringify(tickets));
 localStorage.setItem("fridge", JSON.stringify(fridge));
 localStorage.setItem("userPrices", JSON.stringify(userPrices));
-}
-
-function fillTicketStores() {
-const sel = document.getElementById("ticketStore");
-if (!sel) return;
-let h = "";
-for (const s of STORES) h += `<option value="${s.id}">${s.emoji} ${s.name}</option>`;
-sel.innerHTML = h;
 }
 
 let ticketPhotoThumb = null;
@@ -1204,7 +1192,7 @@ return { amount: q, basis: "pc" };
 }
 
 function saveTicket() {
-const storeId = document.getElementById("ticketStore").value;
+const storeId = detectedStore || "";
 const rows = [...document.querySelectorAll("#ticketLines .tl-row")];
 const items = [];
 let total = 0;
@@ -1256,7 +1244,25 @@ document.getElementById("ticketGallery").value = "";
 document.getElementById("ticketPhotoPreview").style.display = "none";
 ticketPhotoData = null;
 ticketPhotoThumb = null;
+detectedStore = null;
+const el = document.getElementById("ticketStoreName");
+if (el) el.textContent = "";
 alert(`Ticket enregistré : ${items.length} produit(s), ${total.toFixed(2)} €. Frigo et prix réels mis à jour !`);
+}
+
+function cancelTicket() {
+if (!confirm("Annuler ce ticket ? Les produits scannés ne seront pas enregistrés.")) return;
+document.getElementById("ticketLines").innerHTML = "";
+document.getElementById("ticketPhoto").value = "";
+document.getElementById("ticketGallery").value = "";
+document.getElementById("ticketPhotoPreview").style.display = "none";
+ticketPhotoData = null;
+ticketPhotoThumb = null;
+detectedStore = null;
+const el = document.getElementById("ticketStoreName");
+if (el) el.textContent = "";
+const sp = document.getElementById("scanProgress");
+if (sp) sp.style.display = "none";
 }
 
 function renderTickets() {
@@ -1593,13 +1599,15 @@ return { items: items, store: null };
 }
 
 function applyScanResult(result) {
+detectedStore = result.store || null;
 document.getElementById("ticketLines").innerHTML = "";
 for (const it of result.items) {
 addTicketLine({ name: it.label || it.name, label: it.label && it.label !== it.name ? it.name : "", qty: it.qty, unit: it.unit, price: it.price });
 }
-if (result.store) {
-const sel = document.getElementById("ticketStore");
-if ([...sel.options].some(o => o.value === result.store)) sel.value = result.store;
+const st = STORES.find(x => x.id === detectedStore);
+if (st) {
+const el = document.getElementById("ticketStoreName");
+if (el) el.textContent = st.emoji + " " + st.name;
 }
 }
 
@@ -1974,7 +1982,7 @@ document.getElementById("priceStoreChoice").style.display = "";
 
 renderRecipes();
 loadDB().then(() => { fillIngDatalist(); });
-fillTicketStores();
+
 renderTickets();
 renderFridge();</script>
 </body>
