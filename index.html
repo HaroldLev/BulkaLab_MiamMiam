@@ -76,7 +76,7 @@ ticket-select, .ticket-select{width:100%;border:1px solid var(--border);border-r
 .fridge-item .fi-date{font-size:11px;color:var(--muted)}
 .fridge-item .fi-del{border:none;background:none;color:#d33;font-size:17px;cursor:pointer;padding:4px}.fridge-item.sel{border-color:var(--primary);background:#fff4f0}.fridge-item input[type=checkbox]{width:20px;height:20px;accent-color:var(--green);flex-shrink:0}
 .price-real{color:var(--green);font-size:10px;font-weight:700}
-.result-hint{font-size:12px;color:var(--muted);margin:4px 2px}.loading{text-align:center;color:var(--muted);padding:14px;font-size:14px}.create-photo-preview{width:100%;max-height:160px;object-fit:cover;border-radius:12px;margin-top:6px;background:#f7f5f2}.create-photo-btns{display:flex;gap:8px;margin-top:6px}.create-ing-list{margin-top:8px}.create-ing-row{display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:8px 10px;margin-bottom:6px}.create-ing-row .ci-name{flex:1;font-size:14px}.create-ing-row .ci-qty{font-size:13px;color:var(--muted);white-space:nowrap}.create-ing-row .ci-del{border:none;background:none;color:#d33;font-size:17px;cursor:pointer;padding:2px 4px}.create-ing-search{display:flex;gap:6px;margin-top:6px}.create-ing-search input{flex:1;border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:15px;background:var(--bg);font-family:inherit}.create-ing-results{max-height:180px;overflow-y:auto;margin-top:4px}.create-ing-result{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:var(--card);margin-bottom:4px;cursor:pointer;font-size:14px}.create-ing-result:active{background:#fff4f0}.create-ing-result img{width:28px;height:28px;border-radius:50%;object-fit:cover;background:#f7f5f2}.ci-fridge-tag{font-size:10px;background:#e3f5ea;color:var(--green);border-radius:6px;padding:1px 6px;font-weight:700}</style>
+.result-hint{font-size:12px;color:var(--muted);margin:4px 2px}.loading{text-align:center;color:var(--muted);padding:14px;font-size:14px}.create-photo-preview{width:100%;max-height:160px;object-fit:cover;border-radius:12px;margin-top:6px;background:#f7f5f2}.create-photo-btns{display:flex;gap:8px;margin-top:6px}.create-ing-list{margin-top:8px}.create-ing-row{display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:8px 10px;margin-bottom:6px}.create-ing-row .ci-name{flex:1;font-size:14px}.create-ing-row .ci-qty{font-size:13px;color:var(--muted);white-space:nowrap}.create-ing-row .ci-del{border:none;background:none;color:#d33;font-size:17px;cursor:pointer;padding:2px 4px}.create-ing-search{display:flex;gap:6px;margin-top:6px;position:relative;z-index:30}.create-ing-search input{flex:1;border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:15px;background:var(--bg);font-family:inherit}.create-ing-results{position:absolute;top:calc(100% + 6px);left:0;right:0;background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.16);z-index:50;max-height:320px;overflow-y:auto;display:none;animation:cimIn .16s ease;padding:6px 0}.create-ing-results.open{display:block}@keyframes cimIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}.cim-head{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:8px 14px 4px}.create-ing-result{display:flex;align-items:center;gap:8px;padding:9px 12px;border:none;border-radius:10px;background:none;margin:0 4px;cursor:pointer;font-size:14px}.create-ing-result:hover,.create-ing-result:active{background:#fff4f0}.create-ing-result img{width:28px;height:28px;border-radius:50%;object-fit:cover;background:#f7f5f2}.create-ing-row{cursor:pointer}.create-ing-row:hover{border-color:var(--primary)}.ci-edit-hint{font-size:11px;color:var(--muted)}.ci-add-btn{width:24px;height:24px;border-radius:50%;background:#fff4f0;color:var(--primary);font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0}.ci-fridge-tag{font-size:10px;background:#e3f5ea;color:var(--green);border-radius:6px;padding:1px 6px;font-weight:700}</style>
 </head>
 <body>
 <header>
@@ -226,6 +226,27 @@ ticket-select, .ticket-select{width:100%;border:1px solid var(--border);border-r
 </div>
 </div>
 </div>
+<div class="modal-bg" id="crIngEditBg" onclick="if(event.target===this)closeCrIngEdit()">
+<div class="modal" style="max-width:420px">
+<h2>✏️ Modifier l'ingrédient</h2>
+<div class="field"><label>Ingrédient</label><input id="ceName" placeholder="Ex : Lait"></div>
+<div style="display:flex;gap:8px">
+<div class="field" style="flex:1"><label>Quantité</label><input id="ceQty" type="number" inputmode="decimal" placeholder="Ex : 200"></div>
+<div class="field" style="flex:1"><label>Unité</label>
+<select id="ceUnit" class="ticket-select">
+<option value="pc" selected>pièce(s)</option>
+<option value="g">g</option>
+<option value="kg">kg</option>
+<option value="ml">ml</option>
+<option value="L">L</option>
+</select></div>
+</div>
+<div class="modal-actions">
+<button class="btn btn-secondary" onclick="closeCrIngEdit()">Annuler</button>
+<button class="btn btn-primary" onclick="saveCrIngEdit()">Enregistrer</button>
+</div>
+</div>
+</div>
 <footer id="footerRecipes">
 <button class="btn btn-secondary" id="btnClear" onclick="clearSelection()">Tout retirer</button>
 <button class="btn btn-primary" id="btnGenerate" onclick="showTab('list')" disabled>🛒 Voir ma liste</button>
@@ -318,7 +339,7 @@ Recettes : TheMealDB + Données METRO France (metro.fr) – CC-BY 4.0
 <label>Ingrédients</label>
 <div class="create-ing-list" id="crIngList"></div>
 <div class="create-ing-search">
-<input id="crIngSearch" placeholder="Rechercher un ingrédient..." autocomplete="off" oninput="onCreateIngSearch()">
+<input id="crIngSearch" placeholder="Rechercher un ingrédient..." autocomplete="off" oninput="onCreateIngSearch()" onfocus="onCreateIngFocus()">
 </div>
 <div class="create-ing-results" id="crIngResults"></div>
 <div class="hint" style="margin-top:4px">💡 Les ingrédients du frigo sont proposés en haut.</div>
@@ -339,7 +360,7 @@ Recettes : TheMealDB + Données METRO France (metro.fr) – CC-BY 4.0
 </div>
 </div>
 </div>
-<script>const APP_VERSION = "1.35.0";
+<script>const APP_VERSION = "1.36.0";
 const GEMINI_KEY = ["AQ.", "Ab8RN6LNj_qwe", "HzNsF3YVNdjcN4", "P0l2Xqs_8U7", "GGxPOtmGZj2Q"].join("");
 const GEMINI_MODEL = "gemini-3.5-flash";
 const DEFAULT_RECIPES = [];
@@ -1237,12 +1258,51 @@ el.innerHTML = `<div class="hint">Aucun ingrédient ajouté.</div>`;
 return;
 }
 el.innerHTML = createRecipeIngredients.map((it, i) => `
-<div class="create-ing-row">
+<div class="create-ing-row" onclick="openCrIngEdit(${i})">
 <img src="${ingredientImgUrl(it.name)}" alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'di-ph',textContent:'🥒',style:'font-size:16px'}))">
-<span class="ci-name">${escapeHtml(it.line)}</span>
+<span class="ci-name">${escapeHtml(it.line)}<div class="ci-edit-hint">Touche pour modifier</div></span>
 ${it.fromFridge ? '<span class="ci-fridge-tag">frigo</span>' : ''}
-<button type="button" class="ci-del" onclick="removeCreateIng(${i})">×</button>
+<button type="button" class="ci-del" onclick="event.stopPropagation();removeCreateIng(${i})">×</button>
 </div>`).join("");
+}
+let crIngEditIdx = -1;
+function openCrIngEdit(i) {
+const it = createRecipeIngredients[i];
+if (!it) return;
+crIngEditIdx = i;
+const m = parseQtyUnit(it.line || "");
+document.getElementById("ceName").value = it.name || "";
+document.getElementById("ceQty").value = m.qty;
+document.getElementById("ceUnit").value = m.unit;
+document.getElementById("crIngEditBg").classList.add("open");
+}
+function closeCrIngEdit() {
+crIngEditIdx = -1;
+document.getElementById("crIngEditBg").classList.remove("open");
+}
+function parseQtyUnit(line) {
+const m = String(line || "").match(/([\d.,]+)\s*(kg|g|L|ml|pc|pièce|piece)?/i);
+let qty = m && m[1] ? parseFloat(m[1].replace(",", ".")) : "";
+let unit = m && m[2] ? m[2].toLowerCase() : "";
+if (unit === "pièce" || unit === "piece") unit = "pc";
+return { qty: isNaN(qty) ? "" : qty, unit: ["kg","g","L","ml","pc"].includes(unit) ? unit : "pc" };
+}
+function formatQtyUnit(qty, unit) {
+if (qty === "" || qty === null || isNaN(qty)) return "";
+return String(qty).replace(".", ",") + (unit === "pc" ? "" : " " + unit);
+}
+function saveCrIngEdit() {
+const it = createRecipeIngredients[crIngEditIdx];
+if (!it) { closeCrIngEdit(); return; }
+const name = document.getElementById("ceName").value.trim();
+if (!name) { alert("Le nom de l'ingrédient est requis."); return; }
+const qty = document.getElementById("ceQty").value.trim();
+const unit = document.getElementById("ceUnit").value;
+const qtyTxt = formatQtyUnit(qty, unit);
+it.name = name;
+it.line = qtyTxt ? qtyTxt + (unit === "pc" ? " " : " de ") + name : name;
+renderCreateIngList();
+closeCrIngEdit();
 }
 function removeCreateIng(i) {
 createRecipeIngredients.splice(i, 1);
@@ -1275,7 +1335,7 @@ seen.add(key);
 const basis = f.basis || "pc";
 const qtyTxt = basis === "g" ? (f.qty >= 1000 ? (Math.round(f.qty / 100) / 10) + " kg" : Math.round(f.qty) + " g") : basis === "ml" ? (f.qty >= 1000 ? (Math.round(f.qty / 100) / 10) + " L" : Math.round(f.qty) + " ml") : f.qty + " pc";
 if (query && !name.toLowerCase().includes(query) && !key.includes(query)) continue;
-out.push({ name, line: qtyTxt + " de " + name, fromFridge: true });
+out.push({ name, line: qtyTxt + " de " + name, qtyTxt, fromFridge: true });
 }
 return out;
 }
@@ -1293,15 +1353,44 @@ return list.slice(0, 30).map(n => ({ name: n, line: n, fromFridge: false }));
 function renderCreateIngResults(items) {
 const res = document.getElementById("crIngResults");
 if (!res) return;
-if (!items.length) { res.innerHTML = `<div class="hint">Rien trouvé.</div>`; return; }
-res.innerHTML = items.map((it, i) => `
+window._createIngResults = items;
+if (!items.length) { res.innerHTML = `<div class="hint" style="padding:10px 12px">Rien trouvé.</div>`; res.classList.add("open"); return; }
+let html = "";
+let idx = 0;
+const fridgeItems = items.filter(it => it.fromFridge);
+const otherItems = items.filter(it => !it.fromFridge);
+if (fridgeItems.length) {
+html += `<div class="cim-head">🧺 Dans mon frigo</div>`;
+for (const it of fridgeItems) html += createResultRow(it, idx++);
+}
+if (otherItems.length) {
+html += `<div class="cim-head">🔎 Ingrédients</div>`;
+for (const it of otherItems) html += createResultRow(it, idx++);
+}
+res.innerHTML = html;
+res.classList.add("open");
+}
+function createResultRow(it, i) {
+return `
 <div class="create-ing-result" onclick="addCreateIng(${i})">
 <img src="${ingredientImgUrl(it.name)}" alt="" loading="lazy" onerror="this.style.display='none'">
-<span style="flex:1">${escapeHtml(it.line)}</span>
-${it.fromFridge ? '<span class="ci-fridge-tag">frigo</span>' : ''}
-</div>`).join("");
-window._createIngResults = items;
+<span style="flex:1">${escapeHtml(it.name)}</span>
+${it.fromFridge ? `<span class="ci-qty">${escapeHtml(it.qtyTxt || "")}</span><span class="ci-fridge-tag">frigo</span>` : ''}
+<span class="ci-add-btn">+</span>
+</div>`;
 }
+function onCreateIngFocus() {
+const res = document.getElementById("crIngResults");
+if (!res) return;
+if (res.innerHTML && !res.classList.contains("open")) res.classList.add("open");
+if (!res.innerHTML) onCreateIngSearch();
+}
+document.addEventListener("click", e => {
+const res = document.getElementById("crIngResults");
+if (!res || !res.classList.contains("open")) return;
+if (e.target.closest(".create-ing-search")) return;
+res.classList.remove("open");
+});
 function addCreateIng(i) {
 const items = window._createIngResults || [];
 const it = items[i];
@@ -1316,6 +1405,8 @@ createRecipeIngredients.push(it);
 renderCreateIngList();
 document.getElementById("crIngSearch").value = "";
 document.getElementById("crIngResults").innerHTML = "";
+document.getElementById("crIngResults").classList.remove("open");
+openCrIngEdit(createRecipeIngredients.length - 1);
 }
 function saveCreatedRecipe() {
 const name = document.getElementById("crName").value.trim();
