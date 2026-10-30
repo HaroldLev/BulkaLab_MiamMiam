@@ -243,7 +243,7 @@ ticket-select, .ticket-select{width:100%;border:1px solid var(--border);border-r
 </div>
 </div>
 </div>
-<div class="modal-bg" id="crIngEditBg" onclick="if(event.target===this)closeCrIngEdit()">
+<div class="modal-bg" id="crIngEditBg" style="z-index:70" onclick="if(event.target===this)closeCrIngEdit()">
 <div class="modal" style="max-width:420px">
 <h2>✏️ Modifier l'ingrédient</h2>
 <div class="field"><label>Ingrédient</label><input id="ceName" placeholder="Ex : Lait"></div>
@@ -374,7 +374,7 @@ Recettes : TheMealDB + Données METRO France (metro.fr) – CC-BY 4.0
 </div>
 </div>
 </div>
-<script>const APP_VERSION = "1.37.0";
+<script>const APP_VERSION = "1.37.1";
 const GEMINI_KEY = ["AQ.", "Ab8RN6LNj_qwe", "HzNsF3YVNdjcN4", "P0l2Xqs_8U7", "GGxPOtmGZj2Q"].join("");
 const GEMINI_MODEL = "gemini-3.5-flash";
 const DEFAULT_RECIPES = [];
