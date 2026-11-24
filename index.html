@@ -311,6 +311,7 @@ Recettes : TheMealDB + Données METRO France (metro.fr) – CC-BY 4.0
 </div>
 <div id="step3" style="display:none">
 <div class="sugg-header" style="margin-bottom:2px">
+<span id="typeLabel" class="result-hint" style="font-weight:600;margin-right:auto"></span>
 <span id="suggStatus" class="result-hint"></span>
 <button type="button" class="refresh-btn" onclick="showSuggestions()" title="Autres suggestions">🔄</button>
 </div>
@@ -381,7 +382,7 @@ Recettes : TheMealDB + Données METRO France (metro.fr) – CC-BY 4.0
 </div>
 </div>
 </div>
-<script>const APP_VERSION = "1.38.0";
+<script>const APP_VERSION = "1.39.0";
 const GEMINI_KEY = ["AQ.", "Ab8RN6LNj_qwe", "HzNsF3YVNdjcN4", "P0l2Xqs_8U7", "GGxPOtmGZj2Q"].join("");
 const GEMINI_MODEL = "gemini-3.5-flash";
 const DEFAULT_RECIPES = [];
@@ -479,11 +480,11 @@ selection = selection.filter(x => x !== id);
 save();
 renderRecipes();
 }
-const GRAMS = { g: 1, gr: 1, gramme: 1, grammes: 1, kg: 1000, kilo: 1000, kilos: 1000 };
-const LITERS = { l: 1, litre: 1, litres: 1, litre: 1, ml: 0.001, cl: 0.01, dl: 0.1 };
+const GRAMS = { g: 1, gr: 1, gramme: 1, grammes: 1, kg: 1000, kilo: 1000, kilos: 1000, lb: 453.6, lbs: 453.6, pound: 453.6, pounds: 453.6, oz: 28.35 };
+const LITERS = { l: 1, litre: 1, litres: 1, ml: 0.001, cl: 0.01, dl: 0.1, cup: 0.24, cups: 0.24, tbsp: 0.015, tablespoon: 0.015, tablespoons: 0.015, tsp: 0.005, teaspoon: 0.005, teaspoons: 0.005 };
 function parseIngredient(line) {
 const t = line.trim();
-const m = t.match(/^(\d+(?:[.,]\d+)?)\s*(kg|g|gr|grammes?|gramme|l|litres?|litre|ml|cl|dl|kilo|kilos)\s+(.+)$/i);
+const m = t.match(/^(\d+(?:[.,]\d+)?)\s*(kg|g|gr|grammes?|gramme|l|litres?|litre|ml|cl|dl|kilo|kilos|lb|lbs|pound|pounds|oz|cups?|tbsp|tablespoons?|tsp|teaspoons?)\s+(.+)$/i);
 if (m) {
 let val = parseFloat(m[1].replace(",", "."));
 const unitRaw = m[2].toLowerCase();
@@ -653,6 +654,7 @@ let k = n.toLowerCase().replace(/\b(de |du |des |d'|le |la |les |l')/g, "").repl
 k = k.replace(/^(\d+(?:[.,]\d+)?\s*)+/, "").trim();
 k = k.replace(/^(g|gr|kg|ml|cl|dl|l|litres?|c\.?\s*à\s*[sc.]\.?|tbs|tbsp|tsp|cups?|pinch|pinc[eé]e?s?|gousses?|tranches?|branches?|feuilles?|boîte|can(?:ne)?|sachet|packet)\s+/i, "").trim();
 k = k.replace(/\s*(\d+(?:[.,]\d+)?)\s*(g|gr|kg|ml|cl|dl|l|litres?|lb|oz|tbs|tbsp|tsp|cups?)?$/i, "").trim();
+k = k.replace(/^(?:finely\s+)?(?:diced|sliced|chopped|minced|crushed|grated|peeled|mashed|cloves?|leaves|sprigs|cubes)\s+/i, "").trim();
 k = k.replace(/\s+(?:finely )?(?:diced|sliced|chopped|minced|crushed|grated|peeled|mashed|cloves|clove|leaves|sprigs|cubes)$/i, "").trim();
 k = k.replace(/\s+(a|ré|a r)\s*(r[oô]tir|griller|braiser|mijoter|saute?r?|en sauce|au four|en cocotte|au vin)\b.*$/i, "");
 k = k.replace(/\s+d'?environ\s+\d+(?:[.,]\d+)?\s*(kg)?\s*$/i, "");
@@ -1021,7 +1023,7 @@ function chooseArea(g) {
 currentArea = (g && AREA_GROUPS[g]) ? g : null;
 document.getElementById("step2").style.display = "none";
 document.getElementById("step3").style.display = "";
-document.getElementById("typeLabel").textContent = TYPE_LABELS[currentType] + (currentArea ? " · " + currentArea : "");
+document.getElementById("typeLabel").textContent = (TYPE_LABELS[currentType] || currentType || "") + (currentArea ? " · " + currentArea : "");
 showSuggestions();
 }
 function backToType() {
@@ -1044,7 +1046,9 @@ window._pickedMeal = null;
 }
 function mealMatchesType(m) {
 if (!currentType) return true;
-return TYPE_TO_CATS[currentType].includes(m.strCategory);
+const cats = TYPE_TO_CATS[currentType];
+if (!cats) return true;
+return cats.includes(m.strCategory);
 }
 function mealMatchesArea(m) {
 if (!currentArea) return true;
@@ -1139,7 +1143,9 @@ return ui;
 function mealMatchesTypeDb(m) {
 if (!currentType) return true;
 if (m.type) return m.type === currentType;
-return TYPE_TO_CATS[currentType].includes(m.cat);
+const cats = TYPE_TO_CATS[currentType];
+if (!cats) return true;
+return cats.includes(m.cat);
 }
 function mealMatchesSource(m) {
 return sourceEnabled(m.source || "themealdb");
@@ -1546,7 +1552,7 @@ return { amount: q, basis: "pc" };
 }
 
 function saveTicket() {
-const storeId = detectedStore || "";
+const storeId = detectedStore || "defaut";
 const rows = [...document.querySelectorAll("#ticketLines .tl-row")];
 const items = [];
 let total = 0;
@@ -1775,7 +1781,8 @@ closeFridgeEdit();
 }
 
 function realPriceFor(key, storeId) {
-return (userPrices[key] && userPrices[key][storeId]) || null;
+if (!userPrices[key]) return null;
+return userPrices[key][storeId] || userPrices[key]["defaut"] || null;
 }
 
 
@@ -1810,6 +1817,8 @@ const items = [];
 let seenTotal = false;
 let prevLine = "";
 let prevItem = null;
+const stripUnitPrice = s => s.replace(/\s*[x\u00d7]\s*[\d.,]+\s*\u20ac?\s*\/\s*(kg|g|l)\s*/i, "").replace(/[*\u00d7]/g, "").trim();
+const stripQtyPrefix = s => s.replace(/^[x\u00d7]\s*/i, "").replace(/^(bouteilles?|packs?|paquets?|sachets?|bo[i\u00eete]tes?|barquettes?|briques?|canettes?|lots?)\s+(de|d')?/i, "").trim();
 for (const line of rawLines) {
 if (/^total/i.test(line) && /\d/.test(line)) { seenTotal = true; }
 if (/nombre de lignes/i.test(line) || /^sous.?total/i.test(line)) { seenTotal = true; }
@@ -1849,7 +1858,7 @@ unit = vu === "g" ? "g" : "ml";
 } else if (weightMatch) {
 const w = parseFloat(weightMatch[1].replace(",", "."));
 const isKg = weightMatch[2].toLowerCase() === "kg";
-const stripped = rest.replace(weightMatch[0], "").replace(/[*\u00d7]/g, "").trim();
+const stripped = stripUnitPrice(rest.replace(weightMatch[0], ""));
 name = stripped || prevLine;
 if (w >= 10 && !isKg) { qty = String(w / 1000); unit = "kg"; }
 else { qty = String(w); unit = "kg"; }
@@ -1858,17 +1867,17 @@ const q = parseInt(qtyArticle[1]);
 const v = parseFloat(volMatch[1].replace(",", "."));
 const vu = volMatch[2].toLowerCase();
 const totalMl = vu === "l" ? v * 1000 : vu === "cl" ? v * 10 : v;
-name = (qtyArticle[2] || "").replace(volMatch[0], "").trim() || rest;
+name = stripQtyPrefix((qtyArticle[2] || "").replace(volMatch[0], "")) || rest;
 qty = String(Math.round(totalMl * q));
 unit = "ml";
 } else if (qtyArticle) {
 const q = parseInt(qtyArticle[1]);
-name = (qtyArticle[2] || "").trim();
+name = stripQtyPrefix(qtyArticle[2] || "");
 if (q >= 1 && q <= 20) { qty = String(q); unit = "pc"; } else { name = rest; }
 } else if (volMatch) {
 const v = parseFloat(volMatch[1].replace(",", "."));
 const vu = volMatch[2].toLowerCase();
-name = rest.replace(volMatch[0], "").trim() || rest;
+name = stripUnitPrice(rest.replace(volMatch[0], "")) || prevLine || rest;
 qty = String(vu === "l" ? Math.round(v * 1000) : vu === "cl" ? Math.round(v * 10) : Math.round(v));
 unit = "ml";
 } else {
@@ -2336,11 +2345,14 @@ renderRecipes();
 closeServingsEditor();
 }
 function scaleIngredientLine(line, factor) {
-const m = line.match(/^(\d+(?:[.,]\d+)?)\s*(g|gr|kg|ml|cl|dl|l)?\b/i);
+const m = line.match(/^(\d+(?:\/\d+)?(?:[.,]\d+)?)(?:\s*(g|gr|kg|ml|cl|dl|l)\b)?(\s*)(.*)$/i);
 if (!m) return line;
-const val = parseFloat(m[1].replace(",", ".")) * factor;
-const scaled = roundQty(val) + (m[2] ? " " + m[2] : "");
-return scaled + line.slice(m[0].length);
+let val = m[1].includes("/") ? m[1].split("/").reduce((a, b) => a / (parseFloat(b) || 1)) : parseFloat(m[1].replace(",", "."));
+if (isNaN(val)) return line;
+const scaled = roundQty(val * factor);
+const unit = m[2] ? " " + m[2] : "";
+const rest = (m[3] || "") + (m[4] || "");
+return scaled + unit + (rest ? (unit || m[3] ? rest : " " + rest) : "");
 }
 
 function openPriceModal() {
