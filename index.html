@@ -158,6 +158,13 @@ ticket-select, .ticket-select{width:100%;border:1px solid var(--border);border-r
 <h2>⚙️ Paramètres</h2>
 <div class="section-title" style="margin-top:0">Bases de recettes utilisées</div>
 <div id="dbSources"></div>
+<div class="section-title">Mes données</div>
+<div style="display:flex;gap:8px">
+<button class="btn btn-secondary" style="flex:1" onclick="exportData()">💾 Exporter</button>
+<button class="btn btn-secondary" style="flex:1" onclick="document.getElementById('importFile').click()">📥 Importer</button>
+</div>
+<div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.5">Sauvegarde recettes perso, frigo, tickets, liste, prix et sources dans un fichier JSON.</div>
+<input type="file" id="importFile" accept=".json,application/json" style="display:none" onchange="importData(event)">
 <div class="section-title">À propos</div>
 <div style="font-size:13px;color:var(--muted);line-height:1.6">MiamMiam v<span id="settingsVersion"></span><br>Sources : TheMealDB · METRO France (CC-BY 4.0) · Marmiton (usage personnel)</div>
 <div class="modal-actions">
@@ -374,7 +381,7 @@ Recettes : TheMealDB + Données METRO France (metro.fr) – CC-BY 4.0
 </div>
 </div>
 </div>
-<script>const APP_VERSION = "1.37.1";
+<script>const APP_VERSION = "1.38.0";
 const GEMINI_KEY = ["AQ.", "Ab8RN6LNj_qwe", "HzNsF3YVNdjcN4", "P0l2Xqs_8U7", "GGxPOtmGZj2Q"].join("");
 const GEMINI_MODEL = "gemini-3.5-flash";
 const DEFAULT_RECIPES = [];
@@ -2063,6 +2070,48 @@ document.getElementById("settingsModalBg").classList.add("open");
 }
 function closeSettings() {
 document.getElementById("settingsModalBg").classList.remove("open");
+}
+
+// ============ BACKUP / EXPORT DES DONNÉES ============
+const BACKUP_KEYS = ["recipes", "selection", "checkedItems", "fridge", "tickets", "userPrices", "fridgeMatch", "dbSources"];
+function exportData() {
+const data = {};
+for (const k of BACKUP_KEYS) {
+try { data[k] = JSON.parse(localStorage.getItem(k) || "null"); } catch (e) { data[k] = null; }
+}
+const payload = { app: "MiamMiam", version: APP_VERSION, exportedAt: new Date().toISOString(), data };
+const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+const a = document.createElement("a");
+const ts = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 16);
+a.href = URL.createObjectURL(blob);
+a.download = "miammiam-backup-" + ts + ".json";
+document.body.appendChild(a);
+a.click();
+a.remove();
+setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+function importData(ev) {
+const f = ev.target.files && ev.target.files[0];
+if (!f) return;
+const reader = new FileReader();
+reader.onload = () => {
+try {
+const payload = JSON.parse(reader.result);
+const data = payload && typeof payload === "object" && payload.data && typeof payload.data === "object" ? payload.data : payload;
+if (!data || typeof data !== "object" || Array.isArray(data)) throw new Error("bad");
+const keys = BACKUP_KEYS.filter(k => data[k] !== undefined && data[k] !== null);
+if (!keys.length) throw new Error("empty");
+const src = payload && payload.exportedAt ? "l'export du " + new Date(payload.exportedAt).toLocaleString("fr-FR") : "ce fichier";
+if (!confirm("Importer " + src + " ?\nTes données actuelles (recettes, frigo, tickets, liste, prix) seront remplacées.")) { ev.target.value = ""; return; }
+for (const k of keys) localStorage.setItem(k, JSON.stringify(data[k]));
+alert(keys.length + " jeux de données restaurés. L'app va se recharger.");
+location.reload();
+} catch (e) {
+alert("Fichier invalide : ce n'est pas une sauvegarde MiamMiam.");
+}
+ev.target.value = "";
+};
+reader.readAsText(f);
 }
 
 // ============ ESTIMATION PRIX PANIER ============
